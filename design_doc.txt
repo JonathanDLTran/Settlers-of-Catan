@@ -1,0 +1,17 @@
+We will use something similar to the model view controller paradigm.
+
+Model :
+
+The model stores all data for the game state.
+
+View : 
+
+Main provides the view. It is main that prints out messages
+to the screen to the player. Main will also con
+
+Controller : 
+The user will interact directly with commands to the terminal.
+It means that Command.ml and Command.mli are the controller;
+they will parse the input of the player
+
+
