@@ -56,3 +56,5 @@ let print_hexagon () =
                                   >-----< |}
 
 let () = print_hexagon ()
+
+let () = () |> generate_custom |> print_endline

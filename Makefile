@@ -1,4 +1,4 @@
-MODULES=pregam_board deck board player main
+MODULES=pregame_board deck board player main
 OBJECTS=$(MODULES:=.cmo)
 MLS=$(MODULES:=.ml)
 MLIS=$(MODULES:=.mli)
