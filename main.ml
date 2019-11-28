@@ -1,3 +1,6 @@
+open Pregame_board
+
+
 type game_state = 
   | Pregame
   | Ingame
@@ -7,7 +10,8 @@ type game_state =
 
 (* http://boardgamestogo.com/settlers_pbem.htm *)
 let print_hexagon () = 
-  print_endline {|                >-----<
+  print_endline {|               
+                                  >-----<
                                  /~~~~~~~\
                                 /~~~~~~~~~\
                          >-----<~~~~3:1~~~~>-----<
