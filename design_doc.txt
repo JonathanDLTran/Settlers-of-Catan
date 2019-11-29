@@ -14,4 +14,10 @@ The user will interact directly with commands to the terminal.
 It means that Command.ml and Command.mli are the controller;
 they will parse the input of the player
 
+Player:
+
+
+Board State : 
+
+
 

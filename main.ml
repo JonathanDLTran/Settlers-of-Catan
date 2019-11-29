@@ -1,12 +1,27 @@
 open Pregame_board
 
+type board = string list
+type player = Player.t
 
 type game_state = 
-  | Pregame
-  | Ingame
+  | Pregame of board * player * player
+  | Ingame of board * player * player
   | Victory
   | Quit
 
+let (>>>) f state = 
+  match state with     
+  | Pregame (b, p1, p2) -> f b p1 p2
+  | Ingame (b, p1, p2) -> f b p1 p2
+  | Victory -> Victory
+  | Quit -> Quit
+
+let initialize_game = failwith "unimplemented"
+
+let start_game b p1 p2 = 
+  ANSITerminal.(print_string [green]
+                  "\n\nWelcome to Settlers of Catan.\n");
+  Pregame (b, p1, p2)
 
 (* http://boardgamestogo.com/settlers_pbem.htm *)
 let print_hexagon () = 
