@@ -1,7 +1,3 @@
-type player = 
-  | Player1
-  | Player2
-
 type resource = string
 
 type tile_val = int
@@ -10,13 +6,10 @@ type house =
   | City
   | Settlement
 
-type player = 
-  | Player1 of house
-  | Player2 of house
-
 type vertex = 
   | Uninhabited
-  | Player of player
+  | Player1 of house
+  | Player2 of house
 
 type roadway = 
   | Road
@@ -134,12 +127,12 @@ let index_neighbor_tuples_array =
   |> List.map 
     (fun elt ->
        let (a, b, c, d, e, f) = elt in 
-       let a' = List.map (fun n -> n - 1) a in 
-       let b' = List.map (fun n -> n - 1) b in 
-       let c' = List.map (fun n -> n - 1) c in 
-       let d' = List.map (fun n -> n - 1) d in 
-       let e' = List.map (fun n -> n - 1) e in 
-       let f' = List.map (fun n -> n - 1) f in 
+       let a' = List.map (fun n -> n - 1) a |> List.sort_uniq compare in 
+       let b' = List.map (fun n -> n - 1) b |> List.sort_uniq compare in 
+       let c' = List.map (fun n -> n - 1) c |> List.sort_uniq compare in 
+       let d' = List.map (fun n -> n - 1) d |> List.sort_uniq compare in 
+       let e' = List.map (fun n -> n - 1) e |> List.sort_uniq compare in 
+       let f' = List.map (fun n -> n - 1) f |> List.sort_uniq compare in 
        (a', b', c', d', e', f')
     ) 
   |> Array.of_list
@@ -149,6 +142,106 @@ let init_board =
     (fun tile_num neigh_tup -> add_neighbors unconnected_board tile_num neigh_tup)
     tile_num_arr 
     index_neighbor_tuples_array
+
+let tile_name_to_value c =
+  Char.code c - Char.code 'A'
+
+let value_to_tile_name v = 
+  Char.chr (v + Char.code 'A')
+
+type location = 
+  | UpperRight
+  | Right
+  | LowerRight
+  | LowerLeft
+  | Left
+  | UpperLeft
+
+type player = 
+  | P1
+  | P2
+
+let convert_location loc = 
+  match loc with
+  | UpperRight -> 
+  | Right
+  | LowerRight
+  | LowerLeft
+  | Left
+  | UpperLeft
+
+let rec check_equivalent_vertex add_func original_location surround_list board = 
+  match surround_list with
+  | [] -> board
+  | h :: t ->
+    add_func (value_to_tile_name h) 
+
+let rec add_settlement tile_name location player board = 
+  let value = tile_name_to_value tile_name in 
+  let tile = board.(value) in 
+  match location, player  with
+  | UpperRight, P1 ->
+    board.(value) <- {
+      tile with
+      a = Player1 (Settlement)
+    }; board
+  | UpperRight, P2 ->
+    board.(value) <- {
+      tile with
+      a = Player2 (Settlement)
+    }; board
+  | Right, P1 ->
+    board.(value) <- {
+      tile with
+      b = Player1 (Settlement)
+    }; board
+  | Right, P2 ->
+    board.(value) <- {
+      tile with
+      b = Player2 (Settlement)
+    }; board
+  | LowerRight, P1 ->
+    board.(value) <- {
+      tile with
+      c = Player1 (Settlement)
+    }; board
+  | LowerRight, P2 ->
+    board.(value) <- {
+      tile with
+      c = Player2 (Settlement)
+    }; board
+  | LowerLeft, P1 ->
+    board.(value) <- {
+      tile with
+      d = Player1 (Settlement)
+    }; board
+  | LowerLeft, P2 ->
+    board.(value) <- {
+      tile with
+      d = Player2 (Settlement)
+    }; board
+  | Left, P1 ->
+    board.(value) <- {
+      tile with
+      e = Player1 (Settlement)
+    }; board
+  | Left, P2 ->
+    board.(value) <- {
+      tile with
+      e = Player2 (Settlement)
+    }; board
+  | UpperLeft, P1 ->
+    board.(value) <- {
+      tile with
+      f = Player1 (Settlement)
+    }; board
+  | UpperLeft, P2 ->
+    board.(value) <- {
+      tile with
+      f = Player2 (Settlement)
+    }; board
+
+
 
 
 
