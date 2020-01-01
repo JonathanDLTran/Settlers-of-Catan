@@ -32,7 +32,7 @@ finalcheck: check
 	bash finalcheck.sh
 
 zip:
-	zip battleship.zip *.ml* *.json _tags *.txt Makefile
+	zip settlers.zip *.ml* *.json _tags *.txt Makefile
 	
 docs: docs-public docs-private
 	
@@ -49,4 +49,4 @@ docs-private: build
 
 clean:
 	ocamlbuild -clean
-	rm -rf doc.public doc.private battleship.zip bisect*.out
+	rm -rf doc.public doc.private settlers.zip bisect*.out

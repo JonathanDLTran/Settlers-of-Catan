@@ -16,7 +16,7 @@ let (>>>) f state =
   | Victory -> Victory
   | Quit -> Quit
 
-let initialize_game = failwith "unimplemented"
+(* let initialize_game = failwith "unimplemented" *)
 
 let start_game b p1 p2 = 
   ANSITerminal.(print_string [green]

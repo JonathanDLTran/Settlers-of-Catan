@@ -1,3 +1,87 @@
+
+type tile = 
+  | A | B | C | D | E | F | G | H | I | J | K | L | M | N | O
+  | P | Q | R | S 
+
+let tile_to_node (tile : tile) : int list = 
+  match tile with 
+  | A -> [1; 4; 5; 9; 10]
+  | B -> [3; 4; 8; 9; 14; 15]
+  | C -> [5; 6; 10; 11; 16; 17]
+  | D -> [7; 8; 13; 14; 19; 20]
+  | E -> [9; 10; 15; 16; 21; 22]
+  | F -> [11; 12; 17; 18; 23; 24]
+  | G -> [14; 15; 20; 21; 26; 27]
+  | H -> [16; 17; 22; 23; 28; 29]
+  | I -> [19; 20; 25; 26; 31; 32]
+  | J -> [21; 22; 27; 28; 33; 34]
+  | K -> [23; 24; 29; 30; 35; 36]
+  | L -> [26; 27; 32; 33; 38; 39]
+  | M -> [28; 29; 34; 35; 40; 41]
+  | N -> [31; 32; 37; 38; 43; 44]
+  | O -> [33; 34; 39; 40; 45; 46]
+  | P -> [35; 36; 41; 42; 47; 48]
+  | Q -> [38; 39; 44; 45; 49; 50]
+  | R -> [40; 41; 46; 47; 51; 52]
+  | S -> [45; 46; 50; 51; 53; 54] 
+
+let rec node_status_generator n acc = 
+  if n = 0 then acc
+  else node_status_generator (n - 1) ((n, None) :: acc)
+
+let c_NUM_NODES = 54
+
+let node_occupancy = 
+  node_status_generator c_NUM_NODES []
+
+let special_nodes = [
+  1; 2; 3; 6; 7; 12; 13; 18; 25; 30; 37; 42; 43; 48; 49; 52; 53; 54
+]
+
+let special_neighbors (node : int) : int list = 
+  if not (List.mem node special_nodes) then failwith "Must be special node"
+  else begin 
+    match node with
+    | 1 -> [2; 4]
+    | 2 -> [1; 5]
+    | 3 -> [4; 8]
+    | 6 -> [5; 11]
+    | 7 -> [8; 13]
+    | 12 -> [11; 18]
+    | 13 -> [7; 19]
+    | 18 -> [12; 24]
+    | 25 -> [19; 31]
+    | 30 -> [24; 26]
+    | 37 -> [31; 43]
+    | 42 -> [36; 48]
+    | 43 -> [37; 44]
+    | 48 -> [42; 47]
+    | 49 -> [44; 50]
+    | 52 -> [51; 47]
+    | 53 -> [50; 54]
+    | 54 -> [53; 51]
+    | _ -> failwith "Must be special node"
+  end
+
+let neighbors (node : int) : int list = 
+  assert (not (List.mem node special_nodes));
+  if node mod 2 = 0 then [(node - 6); (node - 1); (node + 6)]
+  else [(node - 6); (node + 1); (node + 6)]
+
+let node_neighbors (node : int) : int list = 
+  assert (node >= 1 && node <= c_NUM_NODES);
+  if List.mem node special_nodes then special_neighbors node
+  else neighbors node 
+
+let edges_occupied = [] 
+
+let add_edge node1 node2 player edges = 
+  assert (node1 <> node2);
+  assert (node1 < node2);
+  assert (node1 >= 1 && node1 <= c_NUM_NODES);
+  assert (node2 >= 1 && node2 <= c_NUM_NODES);
+  (node1, node2, player) :: edges
+
 type resource = string
 
 type tile_val = int
@@ -160,7 +244,7 @@ type location =
 type player = 
   | P1
   | P2
-
+  (* 
 let convert_location loc = 
   match loc with
   | UpperRight -> 
@@ -168,7 +252,7 @@ let convert_location loc =
   | LowerRight
   | LowerLeft
   | Left
-  | UpperLeft
+  | UpperLeft *)
 
 let rec check_equivalent_vertex add_func original_location surround_list board = 
   match surround_list with
