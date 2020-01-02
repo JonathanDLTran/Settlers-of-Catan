@@ -23,6 +23,11 @@ let start_game b p1 p2 =
                   "\n\nWelcome to Settlers of Catan.\n");
   Pregame (b, p1, p2)
 
+let print_pregame_start_msg = 
+  ANSITerminal.(print_string [green] "\nThis is the pregame phase. We will place two settlements and two roads per player. ")
+
+
+
 (* http://boardgamestogo.com/settlers_pbem.htm *)
 let print_hexagon () = 
   print_endline {|               

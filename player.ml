@@ -70,13 +70,13 @@ let roll () =
 (** [resources_to_list player] is a list of the values
     of the resources the player holds, wheat, brick, ore, wool, and lumber
     in that order. *)
-let resources_to_list player = [
-  player.wheat;
-  player.brick;
-  player.ore;
-  player.wool;
-  player.lumber;
-]
+let resources_to_tuple player = (
+  player.wheat,
+  player.brick,
+  player.ore,
+  player.wool,
+  player.lumber
+)
 
 type resource = | Ore | Wheat | Wool | Brick | Lumber
 
@@ -140,11 +140,10 @@ let play_knight player = {
   knights_played = player.knights_played + 1;
 }
 
-let dev_to_list player = [
-  player.year_of_plenty;
-  player.monopoly;
-  player.victory_cards;
-]
+let dev_to_tuple player = (
+  player.year_of_plenty,
+  player.monopoly,
+  player.victory_cards)
 
 type dev = 
   | Year
@@ -254,6 +253,44 @@ let get_robber player = player.robber
 let set_robber player status = {
   player with robber = status
 }
+
+let print_string_of_player_info (p : player) = 
+  let robber_status = get_robber p in 
+  let cities = p.cities_remaining in 
+  let settlements = p.settlements_remaining in 
+  let roads = p.roads_remaining in 
+  let knights_held = p.knights_held in 
+  let knights_played = p.knights_played in 
+  let most_knights = is_largest_army p in 
+  let (y, m, vc) = dev_to_tuple p in 
+  let road_length = get_length_road p in 
+  let most_road = is_longest_road p in 
+  let (w, b, o, wl, l) = resources_to_tuple p in 
+  ANSITerminal.(print_string [black] "\n");
+  ANSITerminal.(print_string [red] ("\nRobber control status : " ^ string_of_bool robber_status ));
+  ANSITerminal.(print_string [black] "\n");
+  ANSITerminal.(print_string [cyan] ("\nNumber of cities remaining : " ^ string_of_int cities ));
+  ANSITerminal.(print_string [cyan] ("\nNumber of settlements remaining : " ^ string_of_int settlements ));
+  ANSITerminal.(print_string [cyan] ("\nNumber of roads remaining : " ^ string_of_int roads ));
+  ANSITerminal.(print_string [black] "\n");
+  ANSITerminal.(print_string [blue] ("\nNumber of knights in hand : " ^ string_of_int knights_held ));
+  ANSITerminal.(print_string [blue] ("\nNumber of knights played : " ^ string_of_int knights_played ));
+  ANSITerminal.(print_string [blue] ("\nLargest army? : " ^ string_of_bool most_knights ));
+  ANSITerminal.(print_string [black] "\n");
+  ANSITerminal.(print_string [yellow] ("\nNumber of year of plent : " ^ string_of_int y ));
+  ANSITerminal.(print_string [yellow] ("\nNumber of monopoly : " ^ string_of_int m ));
+  ANSITerminal.(print_string [yellow] ("\nNumber of Victory Point Cards : " ^ string_of_int vc ));
+  ANSITerminal.(print_string [black] "\n");
+  ANSITerminal.(print_string [green] ("\Longest Road length : " ^ string_of_int road_length ));
+  ANSITerminal.(print_string [green] ("\Longest Road? : " ^ string_of_bool most_road ));
+  ANSITerminal.(print_string [black] "\n");
+  ANSITerminal.(print_string [magenta] ("\nNumber of wheat remaining : " ^ string_of_int w ));
+  ANSITerminal.(print_string [magenta] ("\nNumber of brick remaining : " ^ string_of_int b ));
+  ANSITerminal.(print_string [magenta] ("\nNumber of ore remaining : " ^ string_of_int o ));
+  ANSITerminal.(print_string [magenta] ("\nNumber of wool remaining : " ^ string_of_int wl ));
+  ANSITerminal.(print_string [magenta] ("\nNumber of lumber remaining : " ^ string_of_int l ));
+  ANSITerminal.(print_string [black] "\n")
+
 
 
 

@@ -4,18 +4,28 @@ type end_resource = string
 type end_amt = int
 type structure = string
 
+(** [command] represents a command by the player.
+    [Quit] ends the game. 
+    [Invalid] is an invalid command.
+    [Show] reveals the player's hand : all the cards, plsu dev cards, and remaining
+    cities, settlements and roads. 
+    [Buy] buys the top dev card in the pile. 
+    [Build structure location] builds the structure at the given
+    location. 
+    [Marine Trade start end] trades 4 of the start resource for the end resource. 
+    [Player trade start start_amount end end_amount] trades start_amount of start
+    for end_amount of end.  *)
 type command = 
+  | Quit
   | Invalid 
   | Show
   | Buy
-  | Build of structure
+  | BuildRoad of int * int 
+  | BuildSettlement of int 
+  | BuildCity of int 
+  | UpgradeSettlment of int
   | MarineTrade of start_resource * end_resource
   | PlayerTrade of start_resource * start_amt * end_resource * end_amt
-
-(* commands are of the form
-   Show [resource]
-   MarineTrade resource a, resource b
-   etc. *)
 
 let is_alpha c = 
   match c with
@@ -32,8 +42,12 @@ let rec string_is_digit s =
   | exception (Invalid_argument _) -> true
   | c -> is_digit c && string_is_digit (String.sub s 1 ((String.length s) - 1))
 
+let c_QUIT = "quit"
 let c_SHOW = "show"
-let c_BUILD = "build"
+let c_BUILDROAD = "build_road"
+let c_BUILDSETTLEMENT = "build_settlement"
+let c_BUILDCITY = " build_city"
+let c_UPGRADE = "upgrade"
 let c_BUY = "buy"
 let c_STRUCTURES_LIST = ["city"; "road"; "settlement"]
 let c_MARINE = "marinetrade"
@@ -44,13 +58,26 @@ let string_to_command str_list =
   match str_list with
   | [] -> Invalid
   | h :: [] ->
-    if h = c_SHOW then Show
+    if h = c_QUIT then Quit
+    else if h = c_SHOW then Show
     else if h = c_BUY then Buy
     else Invalid
-  | h1 :: h2 :: [] ->
-    if h1 = c_BUILD && List.mem h2 c_STRUCTURES_LIST 
-    then Build (h2)
+  | h1 :: h2 :: [] when h1 = c_UPGRADE ->
+    if string_is_digit h2 
+    then UpgradeSettlment (int_of_string h2)
     else Invalid
+  | h1 :: h2 :: [] when h1 = c_BUILDSETTLEMENT ->
+    if string_is_digit h2 
+    then BuildSettlement (int_of_string h2)
+    else Invalid
+  | h1 :: h2 :: [] ->
+    if h1 = c_BUILDCITY && string_is_digit h2 
+    then BuildCity (int_of_string h2)
+    else Invalid
+  | h1 :: h2 :: h3 :: [] when h1 = c_BUILDROAD ->
+    if string_is_digit h2 && string_is_digit h3 
+    then BuildRoad (int_of_string h2, int_of_string h3)
+    else Invalid 
   | h1 :: h2 :: h3 :: [] ->
     if h1 = c_MARINE 
     && List.mem h2 c_RESOURCES_LIST 
@@ -78,3 +105,22 @@ let clean s =
 
 let parse s = 
   s |> clean |> string_to_command
+
+type affirmation = 
+  | NotAffirmative 
+  | Accept 
+  | Reject 
+
+let c_ACCEPT = "accept"
+let c_REJECT = "reject"
+
+let string_to_affirmation s = 
+  match s with 
+  | str :: [] -> 
+    if str = c_ACCEPT then Accept
+    else if str = c_REJECT then Reject
+    else NotAffirmative
+  | _ -> NotAffirmative
+
+let parse_affirmative s = 
+  s |> clean |> string_to_affirmation

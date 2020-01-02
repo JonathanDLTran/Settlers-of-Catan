@@ -1,7 +1,41 @@
-
 type tile = 
   | A | B | C | D | E | F | G | H | I | J | K | L | M | N | O
   | P | Q | R | S 
+
+type resource = 
+  | Wheat
+  | Ore 
+  | Wool 
+  | Lumber 
+  | Brick
+  | Desert
+
+let tile_resource_value = [
+  (A, Wheat, 9);
+  (B, Lumber, 8);
+  (C, Wheat, 12);
+  (D, Brick, 5);
+  (E, Lumber, 11);
+  (F, Ore, 10);
+  (G, Ore, 3);
+  (H, Brick, 11);
+  (I, Wheat, 6);
+  (J, Desert, 0);
+  (K, Wool, 2);
+  (L, Wheat, 4);
+  (M, Wool, 4);
+  (N, Wool, 11);
+  (O, Lumber, 3);
+  (P, Lumber, 9);
+  (Q, Wool, 5);
+  (R, Brick, 10);
+  (S, Ore, 8);
+]
+
+let roll_to_tile value = 
+  List.filter (fun (_, _, v) -> v = value) tile_resource_value
+
+let robber_start_tile = J
 
 let tile_to_node (tile : tile) : int list = 
   match tile with 
@@ -24,6 +58,14 @@ let tile_to_node (tile : tile) : int list =
   | Q -> [38; 39; 44; 45; 49; 50]
   | R -> [40; 41; 46; 47; 51; 52]
   | S -> [45; 46; 50; 51; 53; 54] 
+
+let tiles = [
+  A;B;C;D;E;F;G;H;I;J;K;L;M;N;O;P;Q;R;S
+]
+
+let char_to_tile c = 
+  assert (c >= 'A' && c <= 'Z');
+  List.nth tiles (Char.code c - Char.code 'A') 
 
 let rec node_status_generator n acc = 
   if n = 0 then acc
@@ -73,14 +115,68 @@ let node_neighbors (node : int) : int list =
   if List.mem node special_nodes then special_neighbors node
   else neighbors node 
 
+(* ############### EDGE STUFF ########### *)
+
 let edges_occupied = [] 
+
+let connected node1 node2 player edges = 
+  if List.filter (fun (n1, n2, p) -> (n1 = node1 || n2 = node2) && player = p) edges <> [] then true 
+  else false
+
+let check_edge node1 node2 player edges = 
+  if (node1 <= 1 && node1 >= c_NUM_NODES) then false 
+  else if (node2 <= 1 && node2 >= c_NUM_NODES) then false 
+  else if node1 >= node2 then false
+  else if node1 = node2 then false 
+  else if List.filter (fun (n1, n2, _) -> n1 = node1 && n2 = node2) edges <> [] then false (* node not occupied *)
+  else true
 
 let add_edge node1 node2 player edges = 
   assert (node1 <> node2);
   assert (node1 < node2);
   assert (node1 >= 1 && node1 <= c_NUM_NODES);
   assert (node2 >= 1 && node2 <= c_NUM_NODES);
-  (node1, node2, player) :: edges
+  if (check_edge node1 node2 player edges) && (connected node1 node2 player edges)  
+  then (node1, node2, player) :: edges
+  else edges
+
+let add_edge_start_game node1 node2 player edges = 
+  assert (node1 <> node2);
+  assert (node1 < node2);
+  assert (node1 >= 1 && node1 <= c_NUM_NODES);
+  assert (node2 >= 1 && node2 <= c_NUM_NODES);
+  if check_edge node1 node2 player edges then (node1, node2, player) :: edges
+  else edges
+
+(* ############ BOARD OVERVIEW ########### *)
+
+type player = 
+  | Player1 
+  | Player2
+
+type node = 
+  | Settlement of player 
+  | City of player
+
+type board = {
+  robber_node : tile;
+  edges_occupied : (int * int * player) list;
+  nodes_occupied : (int * node option) list;
+}
+
+let instantiate_board = {
+  robber_node = robber_start_tile;
+  edges_occupied = edges_occupied;
+  nodes_occupied = node_occupancy;
+}
+
+(* TODO : add setters for all the data structures *)
+(* 
+let add_settlement node  *)
+
+
+
+(* 
 
 type resource = string
 
@@ -330,4 +426,4 @@ let rec add_settlement tile_name location player board =
 
 
 
-
+ *)

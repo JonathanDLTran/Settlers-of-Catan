@@ -9,14 +9,14 @@ val roll : unit -> int
 
 val initialize_player : player
 
-val resources_to_list : player -> int list
+val resources_to_tuple : player -> (int * int * int * int * int)
 val bulk_add_resources : player -> (resource * int) list -> player
 
 val knights_to_list : player -> int list
 val add_knight : player -> player
 val play_knight : player -> player
 
-val dev_to_list : player -> int list
+val dev_to_tuple : player -> (int * int * int)
 val add_dev : dev -> player -> player
 val play_dev : dev -> player -> player
 
@@ -40,6 +40,8 @@ val remove_piece : player -> piece -> player
 
 val get_robber : player -> bool
 val set_robber : player -> bool -> player
+
+val print_string_of_player_info : player -> unit
 
 
 
