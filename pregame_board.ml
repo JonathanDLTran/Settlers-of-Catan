@@ -123,7 +123,29 @@ let hex_resources_to_string res =
 let shuffle (lst : 'a list) : 'a list =
   QCheck.Gen.(generate1 (shuffle_l lst))
 
-let generate_custom () = 
+let tile_to_position (tile : char) : int = 
+  assert (tile >= 'A' && tile <= 'S');
+  Char.code tile - Char.code 'A'
+
+let c_ROBBER = " ROBBER  "
+let c_EMPTY =  "         "
+
+let rec generate_robber_list tile = 
+  let position = tile_to_position tile in 
+  let rec robber_list_helper position n acc = 
+    if n = 26 then List.rev acc 
+    else begin
+      if n = position then robber_list_helper position (n + 1) (c_ROBBER :: acc)
+      else robber_list_helper position (n + 1) (c_EMPTY :: acc)
+    end 
+  in  robber_list_helper position 0 []
+
+(* let rec generate_numbers n acc = 
+   if n = 55 then List.rev acc 
+   else  *)
+
+let generate_custom robber_tile = 
+  let robber_list = generate_robber_list robber_tile in 
   let nums = shuffle c_HEX_NUMBERS |> List.map hex_num_to_string in 
   let res = shuffle c_HEX_RESOURCES |> List.map hex_resources_to_string in 
   let an = List.nth nums 0 in
@@ -164,48 +186,68 @@ let generate_custom () =
   let rr = List.nth res 17 in
   let sn = List.nth nums 18 in 
   let sr = List.nth res 18 in
+
+  let aR = List.nth robber_list 0 in 
+  let bR = List.nth robber_list 1 in 
+  let cR = List.nth robber_list 2 in 
+  let dR = List.nth robber_list 3 in 
+  let eR = List.nth robber_list 4 in 
+  let fR = List.nth robber_list 5 in 
+  let gR = List.nth robber_list 6 in 
+  let hR = List.nth robber_list 7 in 
+  let iR = List.nth robber_list 8 in 
+  let jR = List.nth robber_list 9 in 
+  let kR = List.nth robber_list 10 in 
+  let lR = List.nth robber_list 11 in 
+  let mR = List.nth robber_list 12 in 
+  let nR = List.nth robber_list 13 in 
+  let oo = List.nth robber_list 14 in 
+  let pR = List.nth robber_list 15 in 
+  let qR = List.nth robber_list 16 in 
+  let rR = List.nth robber_list 17 in 
+  let sR = List.nth robber_list 18 in
   {|                               
-                                  >-----<
+                                  %-----%
                                  /~~~~~~~\
                                 /~~~~~~~~~\
-                         >-----<~~~~3:1~~~~>-----<
+                         %-----%~~~~3:1~~~~%-----%
                         /~~~~~~~\~~~~~~~~~/~~~~~~~\
                        /~~~~~~~~~\*~~~~~*/~~~~~~~~~\
-                >-----<~~~~~~~~~~~>-----<~~~~~~~~~~~>-----<
+                %-----%~~~~~~~~~~1>-----<2~~~~~~~~~~%-----%
                /~~~~~~~\~~~~~~~~~/TILE A \~~~~~~~~~/~~~~~~~\
-              /~~~2:1~~~\~~~~~~~/|}^an ^{|\~~~~~~~/~~~2:1~~~\
-       >-----<~~~wood~~~*>-----<|} ^ar ^ {|>-----<*~~sheep~~~>-----<
-      /~~~~~~~\~~~~~~~~~/TILE B \         /TILE C \~~~~~~~~~/~~~~~~~\
-     /~~~~~~~~~\~~~~~~*/|}^bn^ {|\       /|}^cn ^{|\*~~~~~~/~~~~~~~~~\
-    <~~~~~~~~~~~>-----<|} ^br ^ {|>-----<|} ^cr ^ {|>-----<~~~~~~~~~~~>
-     \~~~~~~~~~/TILE D \         /TILE E \         /TILE F \~~~~~~~~~/
-      \~~~~~~~/|}^dn ^{|\       /|}^en ^{|\       /|}^fn ^{|\~~~~~~~/
-       >-----<|} ^dr ^ {|>-----<|} ^er ^ {|>-----<|} ^fr ^ {|>-----<
-      /~~~~~~~\         /TILE G \         /TILE H \         /~~~~~~~\
-     /~~~2:1~~~\       /|}^gn ^{|\       /|}^hn ^{|\       /~~~2:1~~~\
-    <~~~brick~~*>-----<|} ^gr ^ {|>-----<|} ^hr ^ {|>-----<*~~~ore~~~~>
-     \~~~~~~~~~/TILE I \         /TILE J \  ROBBER /TILE K \~~~~~~~~~/
-      \~~~~~~*/|}^iN ^{|\       /|}^jn ^{|\       /|}^kn ^{|\*~~~~~~/
-       >-----<|} ^ir ^ {|>-----<|} ^jr ^ {|>-----<|} ^ kr ^ {|>-----<
-      /~~~~~~~\         /TILE L \         /TILE M \         /~~~~~~~\
-     /~~~~~~~~~\       /|}^ln ^{|\       /|}^mn ^{|\       /~~~~~~~~~\
-    <~~~~~~~~~~~>-----<|} ^lr ^ {|>-----<|} ^mr ^ {|>-----<~~~~~~~~~~~>  
-     \~~~~~~~~~/TILE N \         /TILE O \         /TILE P \~~~~~~~~~/
-      \~~~~~~~/|}^nn ^{|\       /|}^on ^{|\       /|}^pn ^{|\~~~~~~~/
-       >-----<|} ^nr ^ {|>-----<|} ^oR ^ {|>-----<|} ^pr ^ {|>-----<
-      /~~~~~~*\         /TILE Q \         /TILE R \         /*~~~~~~\
-     /~~~~~~~~~\       /|}^qn ^{|\       /|}^rn ^ {|\       /~~~~~~~~~\
-    <~~~~3:1~~~*>-----<|} ^qr ^ {|>-----<|} ^rr ^ {|>-----<*~~~3:1~~~~>
-     \~~~~~~~~~/~~~~~~~\         /TILE S \         /~~~~~~~\~~~~~~~~~/
-      \~~~~~~~/~~~~~~~~~\       /|}^sn ^{|\       /~~~~~~~~~\~~~~~~~/
-       >-----< ~~~~~~~~~~>-----<|} ^sr ^ {|>-----<~~~~~~~~~~~>-----<
-              \~~~~~~~~~/*~~~~~*\         /*~~~~~*\~~~~~~~~~/
-               \~~~~~~~/~~~~~~~~~\       /~~~2:1~~~\~~~~~~~/
-                >-----<~~~~3:1~~~~>-----<~~~grain~~~>-----<
+              /~~~2:1~~~\~~~~~~4/|}^an ^{|\5~~~~~~/~~~2:1~~~\
+       %-----%~~~wood~~3*>-----<|} ^ar ^ {|>-----<*6~sheep~~~%-----%
+      /~~~~~~~\~~~~~~~~~/TILE B \|}^aR ^{|/TILE C \~~~~~~~~~/~~~~~~~\
+     /~~~~~~~~~\~~~~~8*/|}^bn^ {|\9    10/|}^cn ^{|\*11~~~~/~~~~~~~~~\
+    %~~~~~~~~~~7>-----<|} ^br ^ {|>-----<|} ^cr ^ {|>-----<12~~~~~~~~~%
+     \~~~~~~~~~/TILE D \|}^bR ^{|/TILE E \|}^cR ^{|/TILE F \~~~~~~~~~/
+      \~~~~~~~/|}^dn ^{|\14   15/|}^en ^{|\16   17/|}^fn ^{|\~~~~~~~/
+       %---13<|} ^dr ^ {|>-----<|} ^er ^ {|>-----<|} ^fr ^ {|>18---%
+      /~~~~~~~\|}^dR ^{|/TILE G \|}^eR ^{|/TILE H \|}^fR ^{|/~~~~~~~\
+     /~~~2:1~~~\19   20/|}^gn ^{|\21   22/|}^hn ^{|\23   24/~~~2:1~~~\
+    %~~~brick~~*>-----<|} ^gr ^ {|>-----<|} ^hr ^ {|>-----<*~~~ore~~~~%
+     \~~~~~~~~~/TILE I \|}^gR ^{|/TILE J \|}^hR ^{|/TILE K \~~~~~~~~~/
+      \~~~~~~*/|}^iN ^{|\26   27/|}^jn ^{|\28   29/|}^kn ^{|\*~~~~~~/
+       %---25<|} ^ir ^ {|>-----<|} ^jr ^ {|>-----<|} ^ kr ^ {|>30---%
+      /~~~~~~~\|}^iR ^{|/TILE L \|}^jR ^{|/TILE M \|}^kR ^{|/~~~~~~~\
+     /~~~~~~~~~\31   32/|}^ln ^{|\33   34/|}^mn ^{|\35  36/~~~~~~~~~\
+    %~~~~~~~~~~~>-----<|} ^lr ^ {|>-----<|} ^mr ^ {|>-----<~~~~~~~~~~~%  
+     \~~~~~~~~~/TILE N \|}^lR ^{|/TILE O \|}^mR ^{|/TILE P \~~~~~~~~~/
+      \~~~~~~~/|}^nn ^{|\38   39/|}^on ^{|\40   41/|}^pn ^{|\~~~~~~~/
+       %---37<|} ^nr ^ {|>-----<|} ^oR ^ {|>-----<|} ^pr ^ {|>42---%
+      /~~~~~~*\|}^nR ^{|/TILE Q \|}^oo ^{|/TILE R \|}^pR ^{|/*~~~~~~\
+     /~~~~~~~~~\43   44/|}^qn ^{|\45   46/|}^rn ^{|\47   48/~~~~~~~~~\
+    %~~~~3:1~~~*>-----<|} ^qr ^ {|>-----<|} ^rr ^ {|>-----<*~~~3:1~~~~%
+     \~~~~~~~~~/~~~~~~~\|}^qR ^{|/TILE S \|}^rR ^{|/~~~~~~~\~~~~~~~~~/
+      \~~~~~~~/~~~~~~~~~\49   50/|}^sn ^{|\51   52/~~~~~~~~~\~~~~~~~/
+       %-----%~~~~~~~~~~~>-----<|} ^sr ^ {|>-----<~~~~~~~~~~~%-----%
+              \~~~~~~~~~/*~~~~~*\|}^sR ^{|/*~~~~~*\~~~~~~~~~/
+               \~~~~~~~/~~~~~~~~~\53   54/~~~2:1~~~\~~~~~~~/
+                %-----%~~~~3:1~~~~>-----<~~~grain~~~%-----%
                        \~~~~~~~~~/~~~~~~~\~~~~~~~~~/
                         \~~~~~~~/~~~~~~~~~\~~~~~~~/
-                         >-----<~~~~~~~~~~~>-----<
+                         %-----%~~~~~~~~~~~%-----%
                                 \~~~~~~~~~/
                                  \~~~~~~~/
-                                  >-----< |}
+                                  %-----% |}
 
