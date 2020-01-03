@@ -151,19 +151,25 @@ let rec list_generator filler n acc =
   else list_generator filler (n - 1) (filler :: acc)
 
 let empty_cities_list = 
-  list_generator "s" c_NUM_NODES []
+  list_generator "C" c_NUM_NODES []
 
 let rec node_replacement n cities_list str = 
   match String.get str 0 with 
   | exception e -> ""
   | c -> 
-    print_char c;
     if c = '>' || c = '<' 
     then List.nth cities_list n ^ node_replacement (n + 1) cities_list (String.sub str 1 (String.length str - 1))
     else if c = '\n' then "\n" ^ node_replacement n cities_list (String.sub str 1 (String.length str - 1))
     else if c = '\t' then "\t" ^ node_replacement n cities_list (String.sub str 1 (String.length str - 1))
     else if c = '\\' then "\\" ^ node_replacement n cities_list (String.sub str 1 (String.length str - 1))
     else Char.escaped c ^ node_replacement n cities_list (String.sub str 1 (String.length str - 1))
+
+let direction_chooser n1 = 
+  if n1 < 13 || (n1 >= 19 && n1 < 25) || (n1 >= 31 && n1 < 37) || n1 >= 43 then begin
+    n1 mod 2 = 0 
+  end
+  else 
+    n1 mod 2 <> 0
 
 let rec find_n1_position n1 counter str_list_offset = 
   match str_list_offset with 
@@ -172,7 +178,7 @@ let rec find_n1_position n1 counter str_list_offset =
       match Str.search_forward (Str.regexp (string_of_int n1)) s 0 with
       | exception e -> find_n1_position n1 (counter + 1) t 
       | i -> 
-        if n1 mod 2 = 0 && n1 >= 10 then (i + 1, counter)
+        if direction_chooser n1 && n1 >= 10 then (i + 1, counter)
         else (i, counter)
     end 
 
@@ -189,31 +195,41 @@ let rec replace_position column counter replacement str =
   | exception e -> str
   | c -> 
     if counter = column then replacement ^ (String.sub str 1 (String.length str - 1))
-    else Char.escaped c ^ replace_position column (counter + 1) replacement (String.sub str 1 (String.length str - 1))
+    else begin 
+      if c = '\n' then "\n" ^ replace_position column (counter + 1) replacement (String.sub str 1 (String.length str - 1)) 
+      else if c = '\t' then "\t" ^ replace_position column (counter + 1) replacement (String.sub str 1 (String.length str - 1)) 
+      else if c = '\\' then "\\" ^ replace_position column (counter + 1) replacement (String.sub str 1 (String.length str - 1)) 
+      else Char.escaped c ^ replace_position column (counter + 1) replacement (String.sub str 1 (String.length str - 1)) 
+    end
 
 let rec non_consecutive_replacement n1 i row1 row2 counter replacement str_list_offset = 
   match str_list_offset with 
   | [] -> str_list_offset 
   | row :: t ->
-    if n1 mod 2 = 0 then begin
-      if counter = row1 then replace_position (i + 1) 0 replacement (string_of_int n1) :: t
-      else if counter = row2 then replace_position (i + 2) 0 replacement (string_of_int n1) :: t
+    if direction_chooser n1 then begin
+      if counter = row1 
+      then replace_position (i + 1) 0 replacement row :: non_consecutive_replacement n1 i row1 row2 (counter + 1) replacement t
+      else if counter = row2 
+      then replace_position (i + 2) 0 replacement row :: t
       else row :: non_consecutive_replacement n1 i row1 row2 (counter + 1) replacement t
     end 
     else begin
-      if counter = row1 then replace_position (i - 1) 0 replacement (string_of_int n1) :: t
-      else if counter = row2 then replace_position (i - 2) 0 replacement (string_of_int n1) :: t
+      if counter = row1 
+      then replace_position (i - 1) 0 replacement row :: non_consecutive_replacement n1 i row1 row2 (counter + 1) replacement t
+      else if counter = row2 
+      then replace_position (i - 2) 0 replacement row :: t
       else row :: non_consecutive_replacement n1 i row1 row2 (counter + 1) replacement t
     end
 
 let replace_run column run_length replacement str = 
-  String.sub str 0 (column + 1) ^ replacement ^ String.sub str (column + run_length + 1) (String.length str)
+  let remainder_length = (String.length str) - run_length - column - 1 in 
+  (String.sub str 0 (column + 1)) ^ replacement ^ (String.sub str (column + run_length + 1) remainder_length) 
 
 let rec consecutive_replacement n1 i row counter replacement str_list_offset = 
   match str_list_offset with 
   | [] -> str_list_offset
   | h :: t ->
-    if counter = row then replace_run i 5 replacement h :: t
+    if counter = (row + 1) then replace_run i 5 replacement h :: t
     else h :: consecutive_replacement n1 i row (counter + 1) replacement t
 
 let rec edge_replacement edges_list str_list_preset str_list_offset = 
@@ -227,10 +243,35 @@ let rec edge_replacement edges_list str_list_preset str_list_offset =
         (consecutive_replacement n1 n1_col_index row 0 replacement str_list_offset)
     else 
       edge_replacement t str_list_preset
-        (non_consecutive_replacement n1 n1_col_index (row + 1) (row + 2) 0 replacement str_list_offset)
+        (non_consecutive_replacement n1 n1_col_index (row + 2) (row + 3) 0 replacement str_list_offset)
 
+let c_P1_CONSEC = "====="
+let c_P2_CONSEC = {|"""""|}
+let c_P1_NONCONSEC = "="
+let c_P2_NONCONSEC = {|"|}
 
-let generate_custom robber_tile = 
+let rec edges_to_edge_list (edges : (int * int * bool) list) : (int * int * string) list  = 
+  match edges with 
+  | [] -> []
+  | (n1, n2, b) :: t -> 
+    if b then begin
+      if abs(n1 - n2) = 1 then (n1, n2, c_P1_CONSEC) :: edges_to_edge_list t
+      else (n1, n2, c_P1_NONCONSEC) :: edges_to_edge_list t
+    end 
+    else begin
+      if abs(n1 - n2) = 1 then (n1, n2, c_P2_CONSEC) :: edges_to_edge_list t
+      else (n1, n2, c_P2_NONCONSEC) :: edges_to_edge_list t
+    end
+
+let rec split_list n preset list  = 
+  match n, list with 
+  | 0, [] -> List.rev preset , []
+  | n, [] -> failwith "Cannot split list"
+  | 0, h :: t -> List.rev preset , h :: t
+  | n, h :: t -> split_list (n - 1) (h :: preset) t 
+
+let generate_custom robber_tile edges = 
+  let edges_list = edges_to_edge_list edges in 
   let robber_list = generate_robber_list robber_tile in 
   let nums = shuffle c_HEX_NUMBERS |> List.map hex_num_to_string in 
   let res = shuffle c_HEX_RESOURCES |> List.map hex_resources_to_string in 
@@ -338,7 +379,9 @@ let generate_custom robber_tile =
                                   %-----% |}
   |> node_replacement 0 empty_cities_list
   |> String.split_on_char '\n'
-  |> fun l -> List.length l |> string_of_int |> print_endline; l
+  |> split_list 6 [] 
+  |> fun (preset, offset) -> edge_replacement edges_list preset offset 
+
 
 
 (* 

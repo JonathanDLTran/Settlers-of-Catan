@@ -77,4 +77,23 @@ let print_hexagon () =
 
 let () = print_hexagon ()
 
-let () = 'J' |> generate_custom |> List.map print_endline |> ignore
+let edges = 
+  [(1, 2, true);
+   (21, 22, false); 
+   (3, 4, false); 
+   (34, 40, false);
+   (33, 39, true); 
+   (51, 52, true); 
+   (7, 13, true);
+   (1, 4, false);
+   (2, 5, false);
+   (24, 30, true);
+   (30, 36, false);
+   (37, 43, true);
+   (32, 38, false);
+   (26, 32, true);
+   (19, 25, false);
+   (27, 33, true);
+   (26, 27, false);
+   (38, 39, true);]
+let () = generate_custom 'J' edges |> List.map print_endline |> ignore
