@@ -281,8 +281,8 @@ let print_string_of_player_info (p : player) =
   ANSITerminal.(print_string [yellow] ("\nNumber of monopoly : " ^ string_of_int m ));
   ANSITerminal.(print_string [yellow] ("\nNumber of Victory Point Cards : " ^ string_of_int vc ));
   ANSITerminal.(print_string [black] "\n");
-  ANSITerminal.(print_string [green] ("\Longest Road length : " ^ string_of_int road_length ));
-  ANSITerminal.(print_string [green] ("\Longest Road? : " ^ string_of_bool most_road ));
+  ANSITerminal.(print_string [green] ("\nLongest Road length : " ^ string_of_int road_length ));
+  ANSITerminal.(print_string [green] ("\nLongest Road? : " ^ string_of_bool most_road ));
   ANSITerminal.(print_string [black] "\n");
   ANSITerminal.(print_string [magenta] ("\nNumber of wheat remaining : " ^ string_of_int w ));
   ANSITerminal.(print_string [magenta] ("\nNumber of brick remaining : " ^ string_of_int b ));
