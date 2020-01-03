@@ -77,4 +77,4 @@ let print_hexagon () =
 
 let () = print_hexagon ()
 
-let () = 'S' |> generate_custom |> print_endline
+let () = 'J' |> generate_custom |> List.map print_endline |> ignore
