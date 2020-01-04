@@ -151,25 +151,25 @@ let rec list_generator filler n acc =
   else list_generator filler (n - 1) (filler :: acc)
 
 let empty_cities_list = 
-  list_generator "C" c_NUM_NODES []
+  list_generator "#" c_NUM_NODES []
 
 let rec node_replacement n cities_list str = 
   match String.get str 0 with 
   | exception e -> ""
-  | c -> 
-    if c = '>' || c = '<' 
-    then List.nth cities_list n ^ node_replacement (n + 1) cities_list (String.sub str 1 (String.length str - 1))
-    else if c = '\n' then "\n" ^ node_replacement n cities_list (String.sub str 1 (String.length str - 1))
-    else if c = '\t' then "\t" ^ node_replacement n cities_list (String.sub str 1 (String.length str - 1))
-    else if c = '\\' then "\\" ^ node_replacement n cities_list (String.sub str 1 (String.length str - 1))
-    else Char.escaped c ^ node_replacement n cities_list (String.sub str 1 (String.length str - 1))
+  | c -> begin
+      if c = '>' || c = '<' 
+      then List.nth cities_list n ^ node_replacement (n + 1) cities_list (String.sub str 1 (String.length str - 1))
+      else if c = '\n' then "\n" ^ node_replacement n cities_list (String.sub str 1 (String.length str - 1))
+      else if c = '\t' then "\t" ^ node_replacement n cities_list (String.sub str 1 (String.length str - 1))
+      else if c = '\\' then "\\" ^ node_replacement n cities_list (String.sub str 1 (String.length str - 1))
+      else Char.escaped c ^ node_replacement n cities_list (String.sub str 1 (String.length str - 1))
+    end
 
 let direction_chooser n1 = 
   if n1 < 13 || (n1 >= 19 && n1 < 25) || (n1 >= 31 && n1 < 37) || n1 >= 43 then begin
     n1 mod 2 = 0 
   end
-  else 
-    n1 mod 2 <> 0
+  else  n1 mod 2 <> 0
 
 let rec find_n1_position n1 counter str_list_offset = 
   match str_list_offset with 

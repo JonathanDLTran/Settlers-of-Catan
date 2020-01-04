@@ -95,5 +95,7 @@ let edges =
    (19, 25, false);
    (27, 33, true);
    (26, 27, false);
-   (38, 39, true);]
+   (38, 39, true);
+   (19, 20, true);
+   (47, 48, false);]
 let () = generate_custom 'J' edges |> List.map print_endline |> ignore
