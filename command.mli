@@ -12,7 +12,7 @@ type command =
   | BuildRoad of int * int 
   | BuildSettlement of int 
   | BuildCity of int 
-  | UpgradeSettlment of int
+  | UpgradeSettlement of int
   | MarineTrade of start_resource * end_resource
   | PlayerTrade of start_resource * start_amt * end_resource * end_amt
 

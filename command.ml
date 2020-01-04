@@ -23,7 +23,7 @@ type command =
   | BuildRoad of int * int 
   | BuildSettlement of int 
   | BuildCity of int 
-  | UpgradeSettlment of int
+  | UpgradeSettlement of int
   | MarineTrade of start_resource * end_resource
   | PlayerTrade of start_resource * start_amt * end_resource * end_amt
 
@@ -64,7 +64,7 @@ let string_to_command str_list =
     else Invalid
   | h1 :: h2 :: [] when h1 = c_UPGRADE ->
     if string_is_digit h2 
-    then UpgradeSettlment (int_of_string h2)
+    then UpgradeSettlement (int_of_string h2)
     else Invalid
   | h1 :: h2 :: [] when h1 = c_BUILDSETTLEMENT ->
     if string_is_digit h2 

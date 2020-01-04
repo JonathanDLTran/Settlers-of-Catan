@@ -67,6 +67,8 @@ let char_to_tile c =
   assert (c >= 'A' && c <= 'Z');
   List.nth tiles (Char.code c - Char.code 'A') 
 
+(* ####### BASIC NODE LIST generator ###### *)
+
 let rec node_status_generator n acc = 
   if n = 0 then acc
   else node_status_generator (n - 1) ((n, None) :: acc)
@@ -75,6 +77,8 @@ let c_NUM_NODES = 54
 
 let node_occupancy = 
   node_status_generator c_NUM_NODES []
+
+(* ########NODE NEIGHBOR HELPERS ######## *)
 
 let special_nodes = [
   1; 2; 3; 6; 7; 12; 13; 18; 25; 30; 37; 42; 43; 48; 49; 52; 53; 54
@@ -164,12 +168,16 @@ type structure =
   | City
 
 type board = {
+  tile_info : (tile * resource * int) list;
   robber_node : tile;
   edges_occupied : (int * int * player) list;
   nodes_occupied : (int * player * structure) list;
 }
 
+type t = board
+
 let instantiate_board = {
+  tile_info = tile_resource_value;
   robber_node = robber_start_tile;
   edges_occupied = [];
   nodes_occupied = [];
@@ -184,12 +192,6 @@ type error =
 type action = 
   | Success of board
   | Failure of error * board
-
-(* TODO : add setters for all the data structures *)
-(* 
-let add_settlement node  *)
-
-(* ############ Node stuff #############*)
 
 (* ##### Settlements ######### *)
 
@@ -249,6 +251,12 @@ let add_city node player board =
   then (Failure (SettlmentMissingErr, board))
   (* add the settlement *)
   else Success ({board with nodes_occupied = (node, player, Settlement) :: board.nodes_occupied })
+
+
+(* #########resource collection ######## *)
+
+
+
 
 
 (* 
