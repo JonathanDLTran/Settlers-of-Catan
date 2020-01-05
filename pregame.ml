@@ -7,6 +7,7 @@
 
 open Player
 open Board
+open Command
 
 type pregame_info = 
   Player.t * Player.t * Board.t
@@ -36,14 +37,72 @@ let end_phase_msg pregame =
   ANSITerminal.(print_string [green] "The pregame phase is complete. ");
   PreContinue pregame
 
+let place_settlement_msg () = 
+  ANSITerminal.(print_string [green] "Please place a settlement. Enter an integer corresponding
+  to a node on the map. ")
+
+let place_road_msg () = 
+  ANSITerminal.(print_string [green] "Please place a road. Enter two integers corresponding
+  to connected nodes on the map. ") 
+
 let pregame_command_err_msg () = 
-  ANSITerminal.(print_string [green] "The command you entered cannot be used in the pregame phase. ")
+  ANSITerminal.(print_string [green] "The command you entered cannot be used in the pregame phase. ");
+  ANSITerminal.(print_string [green] "Try again, or type quit to quit. ")
 
-let rec place_player_1_settlement_road (p1, p2, board) = 
-  failwith "Unimplemented"
+let pregame_quit_msg () = 
+  ANSITerminal.(print_string [green] "Quitting game. ")
 
-let rec place_player_2_settlement_road (p1, p2, board) = 
-  failwith "Unimplemented"
+let deal_with_action_error error = 
+  match error with 
+  | PostionOccupiedErr -> ANSITerminal.(print_string [green] "Position was occupied . ")
+  | AdjacentPositionErr ->  ANSITerminal.(print_string [green] "You cannot place a structure like a settlement or a city adjacent to another structure. ")
+  | UnconnectedErr -> ANSITerminal.(print_string [green] "You must place a road, settlement or city connected to a road of yours. ")
+  | SettlmentMissingErr -> ANSITerminal.(print_string [green] "The city at the location you wish to place must have a settlement to upgrade already. ")
+  | NotAnEdgeErr ->  ANSITerminal.(print_string [green] "The nodes you specified are not an edge on the board. ")
+
+let rec place_player_road player (p1, p2, board) = 
+  place_road_msg ();
+  match () |> read_line |> parse with 
+  | BuildRoad (n1, n2) -> begin
+      match add_road_pregame n1 n2 player board with
+      | Success board' -> return_game (p1, p2, board')
+      | Failure (error, board') -> 
+        deal_with_action_error error;
+        place_player_road player (p1, p2, board')
+    end 
+  | Quit -> 
+    pregame_quit_msg ();
+    PreQuit
+  | _ -> 
+    pregame_command_err_msg () ;
+    place_player_road player (p1, p2, board)
+
+let rec place_player_settlement player (p1, p2, board) = 
+  place_settlement_msg ();
+  match () |> read_line |> parse with 
+  | BuildSettlement n -> begin
+      match add_settlement_pregame n player board with
+      | Success board' -> return_game (p1, p2, board')
+      | Failure (error, board') -> 
+        deal_with_action_error error;
+        place_player_settlement player (p1, p2, board')
+    end 
+  | Quit -> 
+    pregame_quit_msg ();
+    PreQuit
+  | _ -> 
+    pregame_command_err_msg () ;
+    place_player_settlement player (p1, p2, board)
+
+let place_player_settlement_road player (p1, p2, board) = 
+  place_player_settlement player (p1, p2, board)
+  |> (>>=) (place_player_road player)
+
+let place_player_1_settlement_road (p1, p2, board) = 
+  place_player_settlement_road true (p1, p2, board)
+
+let place_player_2_settlement_road (p1, p2, board) = 
+  place_player_settlement_road false (p1, p2, board)
 
 let instantiate_pregame () = 
   return_game (initialize_player, initialize_player, instantiate_board)

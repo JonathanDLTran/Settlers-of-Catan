@@ -14,6 +14,8 @@ type resource =
 
 (* ####### BOARD INSTANTIATION ########## *)
 
+(** [tile_to_node tile] is the list of nodes that are on the boundary
+    of [tile]. *)
 let tile_to_node (tile : tile) : int list = 
   match tile with 
   | A -> [1; 2; 4; 5; 9; 10]
@@ -60,16 +62,7 @@ let tile_resource_value = [
   (S, Ore, 8);
 ]
 
-(* ####### BASIC NODE LIST generator ###### *)
-
-let rec node_status_generator n acc = 
-  if n = 0 then acc
-  else node_status_generator (n - 1) ((n, None) :: acc)
-
 let c_NUM_NODES = 54
-
-let node_occupancy = 
-  node_status_generator c_NUM_NODES []
 
 (* ########NODE NEIGHBOR HELPERS ######## *)
 
@@ -77,6 +70,8 @@ let special_nodes = [
   1; 2; 3; 6; 7; 12; 13; 18; 25; 30; 37; 42; 43; 48; 49; 52; 53; 54
 ]
 
+(** [special_neighbors node] is all the neighbors of [nodes] with
+    only 2 neighbors, namely those on the edge of the board. *)
 let special_neighbors (node : int) : int list = 
   if not (List.mem node special_nodes) then failwith "Must be special node"
   else begin 
@@ -102,12 +97,18 @@ let special_neighbors (node : int) : int list =
     | _ -> failwith "Must be special node"
   end
 
+(** [direction_chooser n1] is [true] iff when [n1] is even, 
+    [n1 - 1] is a neighbor on a horizontal of [n1]. *)
 let direction_chooser n1 = 
   if n1 < 13 || (n1 >= 19 && n1 < 25) || (n1 >= 31 && n1 < 37) || n1 >= 43 then begin
     n1 mod 2 = 0 
   end
   else n1 mod 2 <> 0
 
+(** [neighbors node] is the neighbors of [node] on the board. 
+
+    Requires: [node] must have three neighbors on the baord. It cannot
+    be in [special_nodes]. *)
 let neighbors (node : int) : int list = 
   assert (not (List.mem node special_nodes));
   if direction_chooser node then [(node - 6); (node - 1); (node + 6)]
@@ -118,37 +119,6 @@ let node_neighbors (node : int) : int list =
   assert (node >= 1 && node <= c_NUM_NODES);
   if List.mem node special_nodes then special_neighbors node
   else neighbors node 
-
-(* ############### EDGE STUFF ########### *)
-
-let connected node1 node2 player edges = 
-  if List.filter (fun (n1, n2, p) -> (n1 = node1 || n2 = node2) && player = p) edges <> [] then true 
-  else false
-
-let check_edge node1 node2 player edges = 
-  if (node1 <= 1 && node1 >= c_NUM_NODES) then false 
-  else if (node2 <= 1 && node2 >= c_NUM_NODES) then false 
-  else if node1 >= node2 then false
-  else if node1 = node2 then false 
-  else if List.filter (fun (n1, n2, _) -> n1 = node1 && n2 = node2) edges <> [] then false (* node not occupied *)
-  else true
-
-let add_edge node1 node2 player edges = 
-  assert (node1 <> node2);
-  assert (node1 < node2);
-  assert (node1 >= 1 && node1 <= c_NUM_NODES);
-  assert (node2 >= 1 && node2 <= c_NUM_NODES);
-  if (check_edge node1 node2 player edges) && (connected node1 node2 player edges)  
-  then (node1, node2, player) :: edges
-  else edges
-
-let add_edge_start_game node1 node2 player edges = 
-  assert (node1 <> node2);
-  assert (node1 < node2);
-  assert (node1 >= 1 && node1 <= c_NUM_NODES);
-  assert (node2 >= 1 && node2 <= c_NUM_NODES);
-  if check_edge node1 node2 player edges then (node1, node2, player) :: edges
-  else edges
 
 (* ############ BOARD OVERVIEW ########### *)
 
@@ -179,6 +149,7 @@ type error =
   | AdjacentPositionErr 
   | UnconnectedErr
   | SettlmentMissingErr
+  | NotAnEdgeErr
 
 type action = 
   | Success of board
@@ -195,10 +166,14 @@ let check_neighbors (node : int) (node_list : (int * player * structure) list) :
   |> node_neighbors
   |> List.for_all (fun neighbor -> not (List.mem neighbor reduced_node_list))
 
+(** [check_node_occupied node node_list] is [true] iff [node] 
+    is occupied in [node_list]. *)
 let check_node_occupied node node_list = 
   let reduced_nodes = List.map (fun (n, _ , _) -> n) node_list in 
   List.mem node reduced_nodes 
 
+(** [node_connected_to_road node player road_list] is [true] iff
+    [node] is connected to a road in [road_list] for [player]. *)
 let rec node_connected_to_road node player road_list =
   match road_list with
   | [] -> false 
@@ -206,6 +181,8 @@ let rec node_connected_to_road node player road_list =
     if (n1 = node || n2 = node) && p = player then true 
     else node_connected_to_road node player t
 
+(** [add_settlement node player board] adds a settlement to the board
+    given that the settlement is legal and is connected to another road. *)
 let add_settlement node player board = 
   (* check node not occupied in first place *)
   if check_node_occupied node board.nodes_occupied 
@@ -219,6 +196,21 @@ let add_settlement node player board =
   (* add the settlement *)
   else Success ({board with nodes_occupied = (node, player, Settlement) :: board.nodes_occupied })
 
+(** [add_settlement_pregame node player board] adds a settlement
+    in the pregame. Does not require that the settlement is connect
+    to another road. *)
+let add_settlement_pregame node player board = 
+  (* check node not occupied in first place *)
+  if check_node_occupied node board.nodes_occupied 
+  then (Failure (PostionOccupiedErr, board))
+  (* check node is not directly adjacent to other nodes *)
+  else if not (check_neighbors node board.nodes_occupied) 
+  then (Failure (AdjacentPositionErr, board))
+  (* add the settlement *)
+  else Success ({board with nodes_occupied = (node, player, Settlement) :: board.nodes_occupied })
+
+(** [check_node_is_settlement node player node_list] checks that [node]
+    is a [Settlement] for [player]. *)
 let rec check_node_is_settlement node player node_list = 
   match node_list with 
   | [] -> false 
@@ -227,22 +219,26 @@ let rec check_node_is_settlement node player node_list =
     else check_node_is_settlement node player t
 
 (* ##### Cities ######### *)
+
+(** [add_city node player board] adds a city to board
+    given it is a legal position to add the node.  *)
 let add_city node player board = 
   (* check node not occupied in first place *)
   if check_node_occupied node board.nodes_occupied 
-  then (Failure (PostionOccupiedErr, board))
+  then begin 
+    if not (check_node_is_settlement node player board.nodes_occupied)
+    then (Failure (SettlmentMissingErr, board))
+    (* add the city *)
+    else Success ({board with nodes_occupied = (node, player, Settlement) :: board.nodes_occupied })
+  end
   (* check node is not directly adjacent to other nodes *)
   else if not (check_neighbors node board.nodes_occupied) 
   then (Failure (AdjacentPositionErr, board))
   (* check node connects to a prexistint road for the player *)
   else if not (node_connected_to_road node player board.edges_occupied) 
   then (Failure (UnconnectedErr, board))
-  (* check node was a settlement in the first place *)
-  else if not (check_node_is_settlement node player board.nodes_occupied)
-  then (Failure (SettlmentMissingErr, board))
-  (* add the settlement *)
+  (* add the city *)
   else Success ({board with nodes_occupied = (node, player, Settlement) :: board.nodes_occupied })
-
 
 (* #########resource collection ######## *)
 
@@ -344,19 +340,93 @@ let get_resources roll board =
       (neighbors_list_to_resources true empty_resource_hoard board neighbors,
        neighbors_list_to_resources false empty_resource_hoard board neighbors))
 
+(* ############### EDGE STUFF ########### *)
+
+(** [connected node1 node2 player edges] 
+    is [true] iff either [node1] or [node2] connects
+    to the rest of [edges]. *)
+let connected node1 node2 player edges = 
+  if List.filter (fun (n1, n2, p) -> (n1 = node1 || n2 = node2) && player = p) edges <> [] then true 
+  else false
+
+(** [check_nodes_form_edge node1 node2] is [true] iff [node1] and
+    [node2] form a legal edge in the game. *)
+let check_nodes_form_edge node1 node2 = 
+  let node1_neighbors = node_neighbors node1 in 
+  List.mem node2 node1_neighbors
+
+(** [check_edge_connected_to_settlement player node1 node2 board] is [true]
+    iff either [node1] or [node2] is connected to a [Settlement] thatn [player]
+    has already placed on [board]. *)
+let rec check_edge_connected_to_settlement player node1 node2 nodes = 
+  match nodes with 
+  | [] -> false 
+  | (n, p, structure) :: t ->
+    if (n = node1 || n = node2) && p = player && structure = Settlement then true 
+    else check_edge_connected_to_settlement player node1 node2 t 
+
+(** [check_edge node1 node2 player edges] is [true] iff
+    [node1] and [node2] form a valid edge for the [board],
+    [node1] is less than [node2], 
+    [node1] and [node2] specify an unbuilt edge prebiously in [edges]  *)
+let check_edge node1 node2 player edges = 
+  if (node1 <= 1 && node1 >= c_NUM_NODES) then false 
+  else if (node2 <= 1 && node2 >= c_NUM_NODES) then false 
+  else if node1 >= node2 then false
+  else if node1 = node2 then false 
+  else if not (check_nodes_form_edge node1 node2) then false
+  else if List.filter (fun (n1, n2, _) -> n1 = node1 && n2 = node2) edges <> [] then false (* node not occupied *)
+  else true
+
+(** [add_road node1 node2 player board] iadds an edge [node1], [node2]
+    to the [board] for [player] given a valid edge [node1] [node2] 
+
+    Requires that the road to add connects to a previous road on the board. *)
+let add_road node1 node2 player board = 
+  if (node1 <= 1 && node1 >= c_NUM_NODES) then (Failure (NotAnEdgeErr, board))
+  else if (node2 <= 1 && node2 >= c_NUM_NODES) then (Failure (NotAnEdgeErr, board))
+  else if node1 >= node2 then (Failure (NotAnEdgeErr, board))
+  else if node1 = node2 then (Failure (NotAnEdgeErr, board))
+  else if not (check_nodes_form_edge node1 node2) then (Failure (NotAnEdgeErr, board))
+  else if List.filter (fun (n1, n2, _) -> n1 = node1 && n2 = node2) board.edges_occupied <> [] then (Failure (UnconnectedErr, board)) (* node not occupied *)
+  else if not (connected node1 node2 player board.edges_occupied) then (Failure (UnconnectedErr, board)) (* node connected to another node *)
+  else Success {board with edges_occupied = (node1, node2, player) :: board.edges_occupied}
+
+(** [add_road_pregame node1 node2 player board] iadds an edge [node1], [node2]
+    to the [board] for [player] given a valid edge [node1] [node2] 
+
+    Does not require that the edge connects to anither edge, only requires than an
+    edge connects to an existing settlement. 
+
+    Requires: To be used only after a settlement is placed in the pregame for the player. *)
+let add_road_pregame node1 node2 player board = 
+  if (node1 <= 1 && node1 >= c_NUM_NODES) then (Failure (NotAnEdgeErr, board))
+  else if (node2 <= 1 && node2 >= c_NUM_NODES) then (Failure (NotAnEdgeErr, board))
+  else if node1 >= node2 then (Failure (NotAnEdgeErr, board))
+  else if node1 = node2 then (Failure (NotAnEdgeErr, board))
+  else if not (check_nodes_form_edge node1 node2) then (Failure (NotAnEdgeErr, board))
+  else if List.filter (fun (n1, n2, _) -> n1 = node1 && n2 = node2) board.edges_occupied <> [] then (Failure (UnconnectedErr, board)) (* node not occupied *)
+  else if not (check_edge_connected_to_settlement player node1 node2 board.nodes_occupied) then (Failure (UnconnectedErr, board)) (* node connected to another node *)
+  else Success {board with edges_occupied = (node1, node2, player) :: board.edges_occupied}
 
 
 
 
 
+(* DEAD OR DEPRECATED CODE *)
+(* ####### BASIC NODE LIST generator ###### *)
 
+let rec node_status_generator n acc = 
+  if n = 0 then acc
+  else node_status_generator (n - 1) ((n, None) :: acc)
 
-
-
+let node_occupancy = 
+  node_status_generator c_NUM_NODES []
 
 
 
 (* 
+
      type resource = string
 
      type tile_val = int
@@ -599,10 +669,5 @@ let get_resources roll board =
       tile with
       f = Player2 (Settlement)
      }; board
-
-
-
-
-
 
    *)

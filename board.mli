@@ -9,6 +9,7 @@ type error =
   | AdjacentPositionErr 
   | UnconnectedErr
   | SettlmentMissingErr
+  | NotAnEdgeErr
 
 type action = 
   | Success of board
@@ -17,8 +18,10 @@ type action =
 val instantiate_board : board
 
 val add_settlement : int -> player -> board -> action
+val add_settlement_pregame : int -> player -> board -> action
 val add_city : int -> player -> board -> action
-
+val add_road : int -> int -> player -> board -> action
+val add_road_pregame : int -> int -> player -> board -> action
 
 (* ##### Queries ##########*)
 type resource_hoard = {

@@ -270,6 +270,8 @@ let rec split_list n preset list  =
   | 0, h :: t -> List.rev preset , h :: t
   | n, h :: t -> split_list (n - 1) (h :: preset) t 
 
+open Board
+
 let generate_custom robber_tile edges = 
   let edges_list = edges_to_edge_list edges in 
   let robber_list = generate_robber_list robber_tile in 
