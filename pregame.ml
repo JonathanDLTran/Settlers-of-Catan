@@ -64,6 +64,14 @@ let color_of_player player =
   if player then ANSITerminal.blue
   else ANSITerminal.red
 
+let play_settlement player (p1, p2) = 
+  if player then (add_piece p1 (Player.Settlement)), p2
+  else (p1, add_piece p2 (Player.Settlement))
+
+let play_road player (p1, p2) = 
+  if player then (add_piece p1 (Player.Road)), p2
+  else (p1, add_piece p2 (Player.Road))
+
 let rec place_player_road player (p1, p2, board) = 
   print_map board;
   let color = color_of_player player in 
@@ -71,7 +79,9 @@ let rec place_player_road player (p1, p2, board) =
   match () |> read_line |> parse with 
   | BuildRoad (n1, n2) -> begin
       match add_road_pregame n1 n2 player board with
-      | Success board' -> return_game (p1, p2, board')
+      | Success board' -> 
+        let p1', p2' = play_road player (p1, p2) in 
+        return_game (p1', p2', board')
       | Failure (error, board') -> 
         deal_with_action_error color error;
         place_player_road player (p1, p2, board')
@@ -90,7 +100,9 @@ let rec place_player_settlement player (p1, p2, board) =
   match () |> read_line |> parse with 
   | BuildSettlement n -> begin
       match add_settlement_pregame n player board with
-      | Success board' -> return_game (p1, p2, board')
+      | Success board' ->  
+        let p1', p2' = play_settlement player (p1, p2) in 
+        return_game (p1', p2', board')
       | Failure (error, board') -> 
         deal_with_action_error color error;
         place_player_settlement player (p1, p2, board')

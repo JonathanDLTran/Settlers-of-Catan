@@ -220,6 +220,21 @@ type action =
   | Success of board
   | Failure of error * board
 
+(* ####### ROBBER ######## *)
+
+(** [get_robber_tile board] is the string corresponding to the tile
+    the robber is on in [board]. *)
+let get_robber_tile board = 
+  board.robber_node |> tile_to_string
+
+(** [get_robber_tile c board] is the [board] with the robber at 
+    the tile correspionding to [c].
+
+    Requires [c] is a char between 'A' and 'S' inclusive. *)
+let set_robber_tile c board = 
+  assert (c >= 'A' && c <= 'S');
+  {board with robber_node = c |> Char.escaped |> string_to_tile}
+
 (* ##### Settlements ######### *)
 
 (** [check_neighbors node node_list] is [true] iff [node]'s neighbors 

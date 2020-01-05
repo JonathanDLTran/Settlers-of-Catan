@@ -37,3 +37,9 @@ val get_resources : int -> board -> resource_hoard * resource_hoard
 val longest_road : board -> (int * player) option
 
 val print_map : board -> unit
+
+val get_robber_tile : board -> string
+
+(* ###### MANIPULATOR ####### *)
+
+val set_robber_tile : char -> board -> board 

@@ -1,7 +1,14 @@
 open Pregame
+open Game
+open Board_settings
 
-let _ = 
-  instantiate_pregame ()
+let () = 
+  () 
+  |> set_screen_size
+  |> instantiate_pregame 
+  |> pregame_to_game
+  |> run_game
+  |> end_game
 
 (* open Pregame_board
 

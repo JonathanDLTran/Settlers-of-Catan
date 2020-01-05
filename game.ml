@@ -22,7 +22,7 @@ let bind f pregame =
   | GameVictory p -> GameVictory p
   | GameContinue p -> f p
 
-let (>>=) = bind
+let (>>=) = bind 
 
 let pregame_to_game pregame = 
   match pregame with 
@@ -37,7 +37,7 @@ let end_game game =
     if p then ANSITerminal.(print_string [green] "Player 1 wins")
     else ANSITerminal.(print_string [green] "Player 2 wins")
 
-let instantiate_pregame game = 
+let run_game game = 
   failwith "Unimplemented"
 
 

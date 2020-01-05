@@ -8,5 +8,6 @@ type game =
   | GameVictory of player
   | GameQuit
 
-val pregame_to_game : Pregame.pregame_info -> game_info
-val instantiate_pregame : game_info -> game
+val pregame_to_game : Pregame.pregame -> game
+val run_game : game -> game
+val end_game : game -> unit
