@@ -65,6 +65,7 @@ let color_of_player player =
   else ANSITerminal.red
 
 let rec place_player_road player (p1, p2, board) = 
+  print_map board;
   let color = color_of_player player in 
   place_road_msg color;
   match () |> read_line |> parse with 
@@ -83,6 +84,7 @@ let rec place_player_road player (p1, p2, board) =
     place_player_road player (p1, p2, board)
 
 let rec place_player_settlement player (p1, p2, board) = 
+  print_map board;
   let color = color_of_player player in 
   place_settlement_msg color;
   match () |> read_line |> parse with 
@@ -110,6 +112,10 @@ let place_player_1_settlement_road (p1, p2, board) =
 let place_player_2_settlement_road (p1, p2, board) = 
   place_player_settlement_road false (p1, p2, board)
 
+let print_map_at_end (p1, p2, board) = 
+  print_map board;
+  return_game (p1, p2, board)
+
 let instantiate_pregame () = 
   return_game (initialize_player, initialize_player, instantiate_board)
   |> (>>=) pregame_phase_msg
@@ -117,4 +123,5 @@ let instantiate_pregame () =
   |> (>>=) place_player_2_settlement_road
   |> (>>=) place_player_1_settlement_road
   |> (>>=) place_player_2_settlement_road
+  |> (>>=) print_map_at_end 
   |> (>>=) end_phase_msg

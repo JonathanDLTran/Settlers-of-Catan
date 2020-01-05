@@ -140,9 +140,6 @@ let rec generate_robber_list tile =
     end 
   in  robber_list_helper position 0 []
 
-(* let rec generate_numbers n acc = 
-   if n = 55 then List.rev acc 
-   else  *)
 
 let c_NUM_NODES = 54
 
