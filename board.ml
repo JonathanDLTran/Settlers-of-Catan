@@ -1,3 +1,5 @@
+(* ######## TYPES related to board ######## *)
+
 type tile = 
   | A | B | C | D | E | F | G | H | I | J | K | L | M | N | O
   | P | Q | R | S 
@@ -9,6 +11,32 @@ type resource =
   | Lumber 
   | Brick
   | Desert
+
+(* ####### BOARD INSTANTIATION ########## *)
+
+let tile_to_node (tile : tile) : int list = 
+  match tile with 
+  | A -> [1; 2; 4; 5; 9; 10]
+  | B -> [3; 4; 8; 9; 14; 15]
+  | C -> [5; 6; 10; 11; 16; 17]
+  | D -> [7; 8; 13; 14; 19; 20]
+  | E -> [9; 10; 15; 16; 21; 22]
+  | F -> [11; 12; 17; 18; 23; 24]
+  | G -> [14; 15; 20; 21; 26; 27]
+  | H -> [16; 17; 22; 23; 28; 29]
+  | I -> [19; 20; 25; 26; 31; 32]
+  | J -> [21; 22; 27; 28; 33; 34]
+  | K -> [23; 24; 29; 30; 35; 36]
+  | L -> [26; 27; 32; 33; 38; 39]
+  | M -> [28; 29; 34; 35; 40; 41]
+  | N -> [31; 32; 37; 38; 43; 44]
+  | O -> [33; 34; 39; 40; 45; 46]
+  | P -> [35; 36; 41; 42; 47; 48]
+  | Q -> [38; 39; 44; 45; 49; 50]
+  | R -> [40; 41; 46; 47; 51; 52]
+  | S -> [45; 46; 50; 51; 53; 54] 
+
+let robber_start_tile = J
 
 let tile_resource_value = [
   (A, Wheat, 9);
@@ -31,41 +59,6 @@ let tile_resource_value = [
   (R, Brick, 10);
   (S, Ore, 8);
 ]
-
-let roll_to_tile value = 
-  List.filter (fun (_, _, v) -> v = value) tile_resource_value
-
-let robber_start_tile = J
-
-let tile_to_node (tile : tile) : int list = 
-  match tile with 
-  | A -> [1; 4; 5; 9; 10]
-  | B -> [3; 4; 8; 9; 14; 15]
-  | C -> [5; 6; 10; 11; 16; 17]
-  | D -> [7; 8; 13; 14; 19; 20]
-  | E -> [9; 10; 15; 16; 21; 22]
-  | F -> [11; 12; 17; 18; 23; 24]
-  | G -> [14; 15; 20; 21; 26; 27]
-  | H -> [16; 17; 22; 23; 28; 29]
-  | I -> [19; 20; 25; 26; 31; 32]
-  | J -> [21; 22; 27; 28; 33; 34]
-  | K -> [23; 24; 29; 30; 35; 36]
-  | L -> [26; 27; 32; 33; 38; 39]
-  | M -> [28; 29; 34; 35; 40; 41]
-  | N -> [31; 32; 37; 38; 43; 44]
-  | O -> [33; 34; 39; 40; 45; 46]
-  | P -> [35; 36; 41; 42; 47; 48]
-  | Q -> [38; 39; 44; 45; 49; 50]
-  | R -> [40; 41; 46; 47; 51; 52]
-  | S -> [45; 46; 50; 51; 53; 54] 
-
-let tiles = [
-  A;B;C;D;E;F;G;H;I;J;K;L;M;N;O;P;Q;R;S
-]
-
-let char_to_tile c = 
-  assert (c >= 'A' && c <= 'Z');
-  List.nth tiles (Char.code c - Char.code 'A') 
 
 (* ####### BASIC NODE LIST generator ###### *)
 
@@ -127,8 +120,6 @@ let node_neighbors (node : int) : int list =
   else neighbors node 
 
 (* ############### EDGE STUFF ########### *)
-
-let edges_occupied = [] 
 
 let connected node1 node2 player edges = 
   if List.filter (fun (n1, n2, p) -> (n1 = node1 || n2 = node2) && player = p) edges <> [] then true 
@@ -215,7 +206,7 @@ let rec node_connected_to_road node player road_list =
     if (n1 = node || n2 = node) && p = player then true 
     else node_connected_to_road node player t
 
-let add_settlment node player board = 
+let add_settlement node player board = 
   (* check node not occupied in first place *)
   if check_node_occupied node board.nodes_occupied 
   then (Failure (PostionOccupiedErr, board))
@@ -255,12 +246,117 @@ let add_city node player board =
 
 (* #########resource collection ######## *)
 
+let tiles = [
+  A;B;C;D;E;F;G;H;I;J;K;L;M;N;O;P;Q;R;S
+]
+
+(** [char_to_tile c] is the tile representing [c].  *) 
+let char_to_tile c = 
+  assert (c >= 'A' && c <= 'Z');
+  List.nth tiles (Char.code c - Char.code 'A') 
+
+(** [rool_to_tile value] is the list of tiles that 
+    has a node vertex at [value].  *)
+let roll_to_tile value = 
+  assert (value >= 2 && value <= 12);
+  List.filter (fun (_, _, v) -> v = value) tile_resource_value
+
+(** [tile_to_neighbors tile_list] is the list of 
+    neighbors for the tiles in [tile_list] tagged with 
+    the resource the neighbor had. *)
+let rec tile_to_neighbors tile_list = 
+  match tile_list with 
+  | [] -> []
+  | (tile, resource, value) :: t ->
+    tile
+    |> tile_to_node  
+    |> List.map (fun n -> (n, resource))
+    |> (@) (tile_to_neighbors t)
+
+type resource_hoard = {
+  wheat : int;
+  ore : int ;
+  wool : int;
+  brick : int;
+  lumber : int;
+}
+
+let empty_resource_hoard = {
+  wheat = 0;
+  ore = 0;
+  wool = 0;
+  brick = 0;
+  lumber = 0;
+}
+
+(** [update_resource_hoard resource num_cards hoard] updates
+    the [hoard] with the current amount of [resource]
+    based on [num_cards]. *)
+let update_resource_hoard resource num_cards hoard = 
+  match resource with 
+  | Wheat -> 
+    {hoard with wheat = num_cards + hoard.wheat}
+  | Ore -> 
+    {hoard with ore = num_cards + hoard.ore}
+  | Wool -> 
+    {hoard with wool = num_cards + hoard.wool}
+  | Lumber -> 
+    {hoard with lumber = num_cards + hoard.lumber}
+  | Brick -> 
+    {hoard with brick = num_cards + hoard.brick}
+  | Desert -> failwith "resource cannot be desert"
+
+(** [structure_to_num_cards structure] converts a structure
+    to the equivalent number of card resources that structure produces.  *)
+let structure_to_num_cards structure = 
+  match structure with 
+  | Settlement -> 1
+  | City -> 2
+
+(** [mem_nodes_occupied node player nodes_occupied] is the number
+    of cards a player would get given [node] for [player].  *)
+let rec mem_nodes_occupied node player nodes_occupied = 
+  match nodes_occupied with 
+  | [] -> 0
+  | (n, p, structure) :: t ->
+    if n = node && p = player then structure_to_num_cards structure 
+    else mem_nodes_occupied node player t
+
+(** [neighbors_list_to_resources player resource_hoard board neighbors] 
+    is the [resource hoard] for the [player] based on [neighbors] 
+    and the game [board]. *)
+let rec neighbors_list_to_resources player resource_hoard board neighbors = 
+  match neighbors with 
+  | [] -> resource_hoard
+  | (node, resource) :: t ->  
+    let num_cards = mem_nodes_occupied node player board.nodes_occupied in 
+    let new_hoard = update_resource_hoard resource num_cards resource_hoard in 
+    neighbors_list_to_resources player new_hoard board t
+
+(** [add_resources roll board] is the pair of resource hoards
+    for the resources that player1 and player2 would pick up
+    upon the [roll] on the game [board] at the current state.  *)
+let get_resources roll board = 
+  roll 
+  |> roll_to_tile 
+  |> tile_to_neighbors
+  |> (fun neighbors ->
+      (neighbors_list_to_resources true empty_resource_hoard board neighbors,
+       neighbors_list_to_resources false empty_resource_hoard board neighbors))
+
+
+
+
+
+
+
+
+
 
 
 
 
 (* 
-
      type resource = string
 
      type tile_val = int

@@ -1,6 +1,9 @@
 type board
 type t = board
 
+type player = bool
+
+(* ##### GENERATORS ##########*)
 type error = 
   | PostionOccupiedErr
   | AdjacentPositionErr 
@@ -12,4 +15,19 @@ type action =
   | Failure of error * board
 
 val instantiate_board : board
+
+val add_settlement : int -> player -> board -> action
+val add_city : int -> player -> board -> action
+
+
+(* ##### Queries ##########*)
+type resource_hoard = {
+  wheat : int;
+  ore : int ;
+  wool : int;
+  brick : int;
+  lumber : int;
+}
+
+val get_resources : int -> board -> resource_hoard * resource_hoard
 
