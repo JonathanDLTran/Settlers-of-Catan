@@ -409,7 +409,10 @@ let add_road_pregame node1 node2 player board =
   else if not (check_edge_connected_to_settlement player node1 node2 board.nodes_occupied) then (Failure (UnconnectedErr, board)) (* node connected to another node *)
   else Success {board with edges_occupied = (node1, node2, player) :: board.edges_occupied}
 
+(* ######### Road Length algorithm ######## *)
 
+let longest_road board = 
+  failwith "Unimplemented"
 
 
 

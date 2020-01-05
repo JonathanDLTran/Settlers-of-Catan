@@ -1,36 +1,41 @@
-open Pregame_board
+open Pregame
 
-type board = string list
-type player = Player.t
+let _ = 
+  instantiate_pregame ()
 
-type game_state = 
-  | Pregame of board * player * player
-  | Ingame of board * player * player
-  | Victory
-  | Quit
+(* open Pregame_board
 
-let (>>>) f state = 
-  match state with     
-  | Pregame (b, p1, p2) -> f b p1 p2
-  | Ingame (b, p1, p2) -> f b p1 p2
-  | Victory -> Victory
-  | Quit -> Quit
+   type board = string list
+   type player = Player.t
 
-(* let initialize_game = failwith "unimplemented" *)
+   type game_state = 
+   | Pregame of board * player * player
+   | Ingame of board * player * player
+   | Victory
+   | Quit
 
-let start_game b p1 p2 = 
-  ANSITerminal.(print_string [green]
+   let (>>>) f state = 
+   match state with     
+   | Pregame (b, p1, p2) -> f b p1 p2
+   | Ingame (b, p1, p2) -> f b p1 p2
+   | Victory -> Victory
+   | Quit -> Quit
+
+   (* let initialize_game = failwith "unimplemented" *)
+
+   let start_game b p1 p2 = 
+   ANSITerminal.(print_string [green]
                   "\n\nWelcome to Settlers of Catan.\n");
-  Pregame (b, p1, p2)
+   Pregame (b, p1, p2)
 
-let print_pregame_start_msg = 
-  ANSITerminal.(print_string [green] "\nThis is the pregame phase. We will place two settlements and two roads per player. ")
+   let print_pregame_start_msg = 
+   ANSITerminal.(print_string [green] "\nThis is the pregame phase. We will place two settlements and two roads per player. ")
 
 
 
-(* http://boardgamestogo.com/settlers_pbem.htm *)
-let print_hexagon () = 
-  print_endline {|               
+   (* http://boardgamestogo.com/settlers_pbem.htm *)
+   let print_hexagon () = 
+   print_endline {|               
                                   >-----<
                                  /~~~~~~~\
                                 /~~~~~~~~~\
@@ -75,10 +80,10 @@ let print_hexagon () =
                                  \~~~~~~~/
                                   >-----< |}
 
-let () = print_hexagon ()
+   let () = print_hexagon ()
 
-let edges = 
-  [(1, 2, true);
+   let edges = 
+   [(1, 2, true);
    (21, 22, false); 
    (3, 4, false); 
    (34, 40, false);
@@ -98,4 +103,4 @@ let edges =
    (38, 39, true);
    (19, 20, true);
    (47, 48, false);]
-let () = generate_custom 'J' edges |> List.map print_endline |> ignore
+   let () = generate_custom 'J' edges |> List.map print_endline |> ignore *)
