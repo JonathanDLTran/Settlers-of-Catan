@@ -65,14 +65,14 @@ let tile_to_node (tile : tile) : int list =
 let robber_start_tile = J
 
 let tile_resource_value = [
-  (A, Wheat, 9);
+  (A, Wheat, 12);
   (B, Lumber, 8);
-  (C, Wheat, 12);
+  (C, Wheat, 9);
   (D, Brick, 5);
   (E, Lumber, 11);
   (F, Ore, 10);
   (G, Ore, 3);
-  (H, Brick, 11);
+  (H, Brick, 6);
   (I, Wheat, 6);
   (J, Desert, 7);
   (K, Wool, 2);
@@ -334,7 +334,7 @@ let add_city node player board =
     let old_nodes = board.nodes_occupied in 
     let intermediate_nodes = List.filter (fun (n, _, _) -> n <> node) old_nodes in 
     Success ({board with nodes_occupied = 
-                           (node, player, Settlement) :: intermediate_nodes })
+                           (node, player, City) :: intermediate_nodes })
 
 (* 
   (* check node not occupied in first place *)
@@ -469,11 +469,17 @@ let get_resources roll board =
 
 (* ############### EDGE STUFF ########### *)
 
+let print_triples_list edges = 
+  List.map (fun (n1, n2, p) -> 
+      "(" ^ string_of_int n1 ^ " , " ^ string_of_int n2 ^ " , " ^ string_of_bool p ^ ")" 
+      |> print_endline) edges
+  |> ignore
+
 (** [connected node1 node2 player edges] 
     is [true] iff either [node1] or [node2] connects
     to the rest of [edges]. *)
 let connected node1 node2 player edges = 
-  if List.filter (fun (n1, n2, p) -> (n1 = node1 || n2 = node2) && player = p) edges <> [] then true 
+  if List.filter (fun (n1, n2, p) -> (n1 = node1 || n2 = node2 || n1 = node2 || n2 = node1) && player = p) edges <> [] then true 
   else false
 
 (** [check_nodes_form_edge node1 node2] is [true] iff [node1] and
@@ -502,7 +508,7 @@ let check_edge node1 node2 player edges =
   else if node1 >= node2 then false
   else if node1 = node2 then false 
   else if not (check_nodes_form_edge node1 node2) then false
-  else if List.filter (fun (n1, n2, _) -> n1 = node1 && n2 = node2) edges <> [] then false (* node not occupied *)
+  else if List.filter (fun (n1, n2, _) -> (n1 = node1 && n2 = node2)) edges <> [] then false (* node not occupied *)
   else true
 
 (** [add_road node1 node2 player board] iadds an edge [node1], [node2]
@@ -515,7 +521,7 @@ let add_road node1 node2 player board =
   else if node1 >= node2 then (Failure (NotAnEdgeErr, board))
   else if node1 = node2 then (Failure (NotAnEdgeErr, board))
   else if not (check_nodes_form_edge node1 node2) then (Failure (NotAnEdgeErr, board))
-  else if List.filter (fun (n1, n2, _) -> n1 = node1 && n2 = node2) board.edges_occupied <> [] then (Failure (UnconnectedErr, board)) (* node not occupied *)
+  else if List.filter (fun (n1, n2, _) -> (n1 = node1 && n2 = node2)) board.edges_occupied <> [] then (Failure (PostionOccupiedErr, board)) (* node not occupied *) 
   else if not (connected node1 node2 player board.edges_occupied) then (Failure (UnconnectedErr, board)) (* node connected to another node *)
   else Success {board with edges_occupied = (node1, node2, player) :: board.edges_occupied}
 
@@ -532,7 +538,7 @@ let add_road_pregame node1 node2 player board =
   else if node1 >= node2 then (Failure (NotAnEdgeErr, board))
   else if node1 = node2 then (Failure (NotAnEdgeErr, board))
   else if not (check_nodes_form_edge node1 node2) then (Failure (NotAnEdgeErr, board))
-  else if List.filter (fun (n1, n2, _) -> n1 = node1 && n2 = node2) board.edges_occupied <> [] then (Failure (UnconnectedErr, board)) (* node not occupied *)
+  else if List.filter (fun (n1, n2, _) -> (n1 = node1 && n2 = node2)) board.edges_occupied <> [] then (Failure (PostionOccupiedErr, board)) (* node not occupied *) 
   else if not (check_edge_connected_to_settlement player node1 node2 board.nodes_occupied) then (Failure (UnconnectedErr, board)) (* node connected to another node *)
   else Success {board with edges_occupied = (node1, node2, player) :: board.edges_occupied}
 
