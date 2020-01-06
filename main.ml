@@ -6,9 +6,7 @@ let () =
   () 
   |> set_screen_size
   |> instantiate_pregame 
-  |> pregame_to_game
-  |> run_game
-  |> end_game
+  |> instantiate_game
 
 (* open Pregame_board
 

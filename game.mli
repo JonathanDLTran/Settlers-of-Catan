@@ -9,5 +9,6 @@ type game =
   | GameQuit
 
 val pregame_to_game : Pregame.pregame -> game
-val run_game : game -> game
+val run_game : bool -> game -> game
 val end_game : game -> unit
+val instantiate_game : Pregame.pregame -> unit

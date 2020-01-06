@@ -3,6 +3,19 @@ type t = board
 
 type player = bool
 
+type resource = 
+  | Wheat
+  | Ore 
+  | Wool 
+  | Lumber 
+  | Brick
+  | Desert
+
+
+(* ###### CONVERSIONS ######## *)
+
+val string_to_resource : string -> resource
+
 (* ##### GENERATORS ##########*)
 type error = 
   | PostionOccupiedErr
@@ -39,6 +52,10 @@ val longest_road : board -> (int * player) option
 val print_map : board -> unit
 
 val get_robber_tile : board -> string
+
+val check_player_three_to_one : player -> board -> bool
+
+val check_player_two_to_one : player -> string -> board -> bool
 
 (* ###### MANIPULATOR ####### *)
 

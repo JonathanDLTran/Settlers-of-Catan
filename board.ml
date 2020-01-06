@@ -12,7 +12,31 @@ type resource =
   | Brick
   | Desert
 
+(* ######## RESOURCE CONVERSION ######### *)
+
+(** [string_to_resource s] is the resource corresponding
+    to [s]. *)
+let string_to_resource s = 
+  if s = "wheat" then Wheat 
+  else if s = "ore" then Ore
+  else if s = "wool" then Wool 
+  else if s = "lumber" then Lumber
+  else if s = "brick" then Brick
+  else failwith "Not a valid resource"
+
 (* ####### BOARD INSTANTIATION ########## *)
+
+let three_to_one_port_nodes = [
+  1; 2; 37; 43; 49; 53; 42; 48
+]
+
+let two_to_one_port_nodes = [
+  (11, Wool); (12, Wool); 
+  (24, Ore); (30, Ore); 
+  (51, Wheat); (52, Wheat); 
+  (19, Brick); (25, Brick); 
+  (3, Lumber); (8, Lumber);
+]
 
 (** [tile_to_node tile] is the list of nodes that are on the boundary
     of [tile]. *)
@@ -303,6 +327,16 @@ let rec check_node_is_settlement node player node_list =
 (** [add_city node player board] adds a city to board
     given it is a legal position to add the node.  *)
 let add_city node player board = 
+  if not (check_node_is_settlement node player board.nodes_occupied)
+  then (Failure (SettlmentMissingErr, board))
+  (* add the city *)
+  else 
+    let old_nodes = board.nodes_occupied in 
+    let intermediate_nodes = List.filter (fun (n, _, _) -> n <> node) old_nodes in 
+    Success ({board with nodes_occupied = 
+                           (node, player, Settlement) :: intermediate_nodes })
+
+(* 
   (* check node not occupied in first place *)
   if check_node_occupied node board.nodes_occupied 
   then begin 
@@ -318,7 +352,8 @@ let add_city node player board =
   else if not (node_connected_to_road node player board.edges_occupied) 
   then (Failure (UnconnectedErr, board))
   (* add the city *)
-  else Success ({board with nodes_occupied = (node, player, Settlement) :: board.nodes_occupied })
+  else Success ({board with nodes_occupied = (node, player, Settlement) :: board.nodes_occupied }) 
+  *)
 
 (* #########resource collection ######## *)
 
@@ -380,7 +415,7 @@ let update_resource_hoard resource num_cards hoard =
     {hoard with lumber = num_cards + hoard.lumber}
   | Brick -> 
     {hoard with brick = num_cards + hoard.brick}
-  | Desert -> failwith "resource cannot be desert"
+  | Desert -> hoard
 
 (** [structure_to_num_cards structure] converts a structure
     to the equivalent number of card resources that structure produces.  *)
@@ -389,36 +424,48 @@ let structure_to_num_cards structure =
   | Settlement -> 1
   | City -> 2
 
-(** [mem_nodes_occupied node player nodes_occupied] is the number
-    of cards a player would get given [node] for [player].  *)
-let rec mem_nodes_occupied node player nodes_occupied = 
+(** [mem_nodes_occupied node player nodes_occupied robber_nodes] is the number
+    of cards a player would get given [node] for [player], 
+    given that [node] is not blocked by a robber by [robber_nodes].  *)
+let rec mem_nodes_occupied node player nodes_occupied robber_nodes = 
   match nodes_occupied with 
   | [] -> 0
   | (n, p, structure) :: t ->
-    if n = node && p = player then structure_to_num_cards structure 
-    else mem_nodes_occupied node player t
+    if n = node && p = player && (not (List.mem n robber_nodes)) 
+    then structure_to_num_cards structure 
+    else mem_nodes_occupied node player t robber_nodes
 
 (** [neighbors_list_to_resources player resource_hoard board neighbors] 
     is the [resource hoard] for the [player] based on [neighbors] 
     and the game [board]. *)
-let rec neighbors_list_to_resources player resource_hoard board neighbors = 
+let rec neighbors_list_to_resources player resource_hoard board robber_nodes neighbors = 
   match neighbors with 
   | [] -> resource_hoard
   | (node, resource) :: t ->  
-    let num_cards = mem_nodes_occupied node player board.nodes_occupied in 
+    let num_cards = mem_nodes_occupied node player board.nodes_occupied robber_nodes in 
     let new_hoard = update_resource_hoard resource num_cards resource_hoard in 
-    neighbors_list_to_resources player new_hoard board t
+    neighbors_list_to_resources player new_hoard board robber_nodes t 
+
+(** [robber_to_neighbors board] is the list of 
+    nodes that are bounded around the robber tile for the current
+    [board].  *)
+let robber_to_neighbors board = 
+  let robber_tile = board.robber_node in 
+  tile_to_node robber_tile
 
 (** [add_resources roll board] is the pair of resource hoards
     for the resources that player1 and player2 would pick up
     upon the [roll] on the game [board] at the current state.  *)
 let get_resources roll board = 
+  let robber_nodes = robber_to_neighbors board in 
   roll 
   |> roll_to_tile 
   |> tile_to_neighbors
   |> (fun neighbors ->
-      (neighbors_list_to_resources true empty_resource_hoard board neighbors,
-       neighbors_list_to_resources false empty_resource_hoard board neighbors))
+      (neighbors_list_to_resources
+         true empty_resource_hoard board robber_nodes neighbors,
+       neighbors_list_to_resources 
+         false empty_resource_hoard board robber_nodes neighbors))
 
 (* ############### EDGE STUFF ########### *)
 
@@ -495,6 +542,32 @@ let add_road_pregame node1 node2 player board =
     on [board]. None if there is no longest road, e.g a tie.  *)
 let longest_road board = 
   failwith "Unimplemented"
+
+(* ########## PORTS ############ *)
+
+(** [check_player_three_to_one player board] is [true] iff
+    [player] can access a 3 : 1 port on the [board]. *)
+let check_player_three_to_one player board =
+  let nodes = board.nodes_occupied in 
+  List.filter 
+    (fun (n, p, s) -> p = player && (List.mem n three_to_one_port_nodes))
+    nodes 
+  <> []
+
+(** [check_player_two_to_one player resource board] is [true] iff
+    [player] can access a 2 : 1 port for [resource] on the [board]. *)
+let check_player_two_to_one player resource_string board = 
+  let resource = string_to_resource resource_string in 
+  let nodes = board.nodes_occupied in 
+  let player_nodes = 
+    nodes 
+    |> List.filter (fun (n, p, s) -> p = player)
+    |> List.map (fun (n, _, _) -> n) in 
+  let resource_ports = 
+    two_to_one_port_nodes
+    |> List.filter (fun (n, r) -> r = resource)
+    |> List.map (fun (n, _) -> n) in 
+  List.exists (fun n -> List.mem n player_nodes) resource_ports
 
 (* ######### BOARD STRING REPRESENTATION ############ *)
 

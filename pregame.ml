@@ -128,6 +128,11 @@ let print_map_at_end (p1, p2, board) =
   print_map board;
   return_game (p1, p2, board)
 
+let increment_victory_points (p1, p2, board) = 
+  let p1' = set_victory_points p1 2 in 
+  let p2' = set_victory_points p2 2 in 
+  return_game (p1', p2', board)
+
 let instantiate_pregame () = 
   return_game (initialize_player, initialize_player, instantiate_board)
   |> (>>=) pregame_phase_msg
@@ -136,4 +141,5 @@ let instantiate_pregame () =
   |> (>>=) place_player_1_settlement_road
   |> (>>=) place_player_2_settlement_road
   |> (>>=) print_map_at_end 
+  |> (>>=) increment_victory_points
   |> (>>=) end_phase_msg

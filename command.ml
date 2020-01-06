@@ -10,6 +10,7 @@ type structure = string
     [Show] reveals the player's hand : all the cards, plsu dev cards, and remaining
     cities, settlements and roads. 
     [Buy] buys the top dev card in the pile. 
+    [Finish] ends the turn for the player.
     [Build structure location] builds the structure at the given
     location. 
     [Marine Trade start end] trades 4 of the start resource for the end resource. 
@@ -20,10 +21,11 @@ type command =
   | Invalid 
   | Show
   | Buy
+  | Finish
+  | Map
   | BuildRoad of int * int 
   | BuildSettlement of int 
   | BuildCity of int 
-  | UpgradeSettlement of int
   | MarineTrade of start_resource * end_resource
   | PlayerTrade of start_resource * start_amt * end_resource * end_amt
 
@@ -46,13 +48,14 @@ let c_QUIT = "quit"
 let c_SHOW = "show"
 let c_BUILDROAD = "build_road"
 let c_BUILDSETTLEMENT = "build_settlement"
-let c_BUILDCITY = " build_city"
-let c_UPGRADE = "upgrade"
+let c_BUILDCITY = "build_city"
 let c_BUY = "buy"
 let c_STRUCTURES_LIST = ["city"; "road"; "settlement"]
 let c_MARINE = "marinetrade"
 let c_PLAYER = "playertrade"
 let c_RESOURCES_LIST = ["lumber"; "ore"; "wool"; "brick"; "wheat"]
+let c_FINISH = "finish"
+let c_MAP = "map"
 
 let string_to_command str_list = 
   match str_list with
@@ -61,10 +64,8 @@ let string_to_command str_list =
     if h = c_QUIT then Quit
     else if h = c_SHOW then Show
     else if h = c_BUY then Buy
-    else Invalid
-  | h1 :: h2 :: [] when h1 = c_UPGRADE ->
-    if string_is_digit h2 
-    then UpgradeSettlement (int_of_string h2)
+    else if h = c_FINISH then Finish
+    else if h = c_MAP then Map
     else Invalid
   | h1 :: h2 :: [] when h1 = c_BUILDSETTLEMENT ->
     if string_is_digit h2 

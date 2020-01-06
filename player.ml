@@ -277,18 +277,18 @@ let print_string_of_player_info (p : player) =
   ANSITerminal.(print_string [blue] ("\nNumber of knights played : " ^ string_of_int knights_played ));
   ANSITerminal.(print_string [blue] ("\nLargest army? : " ^ string_of_bool most_knights ));
   ANSITerminal.(print_string [black] "\n");
-  ANSITerminal.(print_string [yellow] ("\nNumber of year of plent : " ^ string_of_int y ));
+  ANSITerminal.(print_string [yellow] ("\nNumber of year of plenty : " ^ string_of_int y ));
   ANSITerminal.(print_string [yellow] ("\nNumber of monopoly : " ^ string_of_int m ));
   ANSITerminal.(print_string [yellow] ("\nNumber of Victory Point Cards : " ^ string_of_int vc ));
   ANSITerminal.(print_string [black] "\n");
   ANSITerminal.(print_string [green] ("\nLongest Road length : " ^ string_of_int road_length ));
   ANSITerminal.(print_string [green] ("\nLongest Road? : " ^ string_of_bool most_road ));
   ANSITerminal.(print_string [black] "\n");
-  ANSITerminal.(print_string [magenta] ("\nNumber of wheat remaining : " ^ string_of_int w ));
-  ANSITerminal.(print_string [magenta] ("\nNumber of brick remaining : " ^ string_of_int b ));
-  ANSITerminal.(print_string [magenta] ("\nNumber of ore remaining : " ^ string_of_int o ));
-  ANSITerminal.(print_string [magenta] ("\nNumber of wool remaining : " ^ string_of_int wl ));
-  ANSITerminal.(print_string [magenta] ("\nNumber of lumber remaining : " ^ string_of_int l ));
+  ANSITerminal.(print_string [magenta] ("\nNumber of wheat : " ^ string_of_int w ));
+  ANSITerminal.(print_string [magenta] ("\nNumber of brick : " ^ string_of_int b ));
+  ANSITerminal.(print_string [magenta] ("\nNumber of ore : " ^ string_of_int o ));
+  ANSITerminal.(print_string [magenta] ("\nNumber of wool : " ^ string_of_int wl ));
+  ANSITerminal.(print_string [magenta] ("\nNumber of lumber : " ^ string_of_int l ));
   ANSITerminal.(print_string [black] "\n")
 
 
