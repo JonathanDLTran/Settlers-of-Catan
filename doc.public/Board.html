@@ -1,0 +1,197 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+<head>
+<link rel="stylesheet" href="style.css" type="text/css">
+<meta content="text/html; charset=iso-8859-1" http-equiv="Content-Type">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="Start" href="index.html">
+<link rel="previous" href="Command.html">
+<link rel="next" href="Player.html">
+<link rel="Up" href="index.html">
+<link title="Index of types" rel=Appendix href="index_types.html">
+<link title="Index of values" rel=Appendix href="index_values.html">
+<link title="Index of modules" rel=Appendix href="index_modules.html">
+<link title="Board_settings" rel="Chapter" href="Board_settings.html">
+<link title="Pregame" rel="Chapter" href="Pregame.html">
+<link title="Game" rel="Chapter" href="Game.html">
+<link title="Deck" rel="Chapter" href="Deck.html">
+<link title="Command" rel="Chapter" href="Command.html">
+<link title="Board" rel="Chapter" href="Board.html">
+<link title="Player" rel="Chapter" href="Player.html"><title>Board</title>
+</head>
+<body>
+<div class="navbar"><a class="pre" href="Command.html" title="Command">Previous</a>
+&nbsp;<a class="up" href="index.html" title="Index">Up</a>
+&nbsp;<a class="post" href="Player.html" title="Player">Next</a>
+</div>
+<h1>Module <a href="type_Board.html">Board</a></h1>
+
+<pre><span id="MODULEBoard"><span class="keyword">module</span> Board</span>: <code class="code">sig</code> <a href="Board.html">..</a> <code class="code">end</code></pre><hr width="100%">
+
+<pre><span id="TYPEboard"><span class="keyword">type</span> <code class="type"></code>board</span> </pre>
+
+
+<pre><span id="TYPEt"><span class="keyword">type</span> <code class="type"></code>t</span> = <code class="type"><a href="Board.html#TYPEboard">board</a></code> </pre>
+
+
+<pre><span id="TYPEplayer"><span class="keyword">type</span> <code class="type"></code>player</span> = <code class="type">bool</code> </pre>
+
+
+<pre><code><span id="TYPEresource"><span class="keyword">type</span> <code class="type"></code>resource</span> = </code></pre><table class="typetable">
+<tr>
+<td align="left" valign="top" >
+<code><span class="keyword">|</span></code></td>
+<td align="left" valign="top" >
+<code><span id="TYPEELTresource.Wheat"><span class="constructor">Wheat</span></span></code></td>
+
+</tr>
+<tr>
+<td align="left" valign="top" >
+<code><span class="keyword">|</span></code></td>
+<td align="left" valign="top" >
+<code><span id="TYPEELTresource.Ore"><span class="constructor">Ore</span></span></code></td>
+
+</tr>
+<tr>
+<td align="left" valign="top" >
+<code><span class="keyword">|</span></code></td>
+<td align="left" valign="top" >
+<code><span id="TYPEELTresource.Wool"><span class="constructor">Wool</span></span></code></td>
+
+</tr>
+<tr>
+<td align="left" valign="top" >
+<code><span class="keyword">|</span></code></td>
+<td align="left" valign="top" >
+<code><span id="TYPEELTresource.Lumber"><span class="constructor">Lumber</span></span></code></td>
+
+</tr>
+<tr>
+<td align="left" valign="top" >
+<code><span class="keyword">|</span></code></td>
+<td align="left" valign="top" >
+<code><span id="TYPEELTresource.Brick"><span class="constructor">Brick</span></span></code></td>
+
+</tr>
+<tr>
+<td align="left" valign="top" >
+<code><span class="keyword">|</span></code></td>
+<td align="left" valign="top" >
+<code><span id="TYPEELTresource.Desert"><span class="constructor">Desert</span></span></code></td>
+
+</tr></table>
+
+
+
+<pre><span id="VALstring_to_resource"><span class="keyword">val</span> string_to_resource</span> : <code class="type">string -> <a href="Board.html#TYPEresource">resource</a></code></pre>
+<pre><code><span id="TYPEerror"><span class="keyword">type</span> <code class="type"></code>error</span> = </code></pre><table class="typetable">
+<tr>
+<td align="left" valign="top" >
+<code><span class="keyword">|</span></code></td>
+<td align="left" valign="top" >
+<code><span id="TYPEELTerror.PostionOccupiedErr"><span class="constructor">PostionOccupiedErr</span></span></code></td>
+
+</tr>
+<tr>
+<td align="left" valign="top" >
+<code><span class="keyword">|</span></code></td>
+<td align="left" valign="top" >
+<code><span id="TYPEELTerror.AdjacentPositionErr"><span class="constructor">AdjacentPositionErr</span></span></code></td>
+
+</tr>
+<tr>
+<td align="left" valign="top" >
+<code><span class="keyword">|</span></code></td>
+<td align="left" valign="top" >
+<code><span id="TYPEELTerror.UnconnectedErr"><span class="constructor">UnconnectedErr</span></span></code></td>
+
+</tr>
+<tr>
+<td align="left" valign="top" >
+<code><span class="keyword">|</span></code></td>
+<td align="left" valign="top" >
+<code><span id="TYPEELTerror.SettlmentMissingErr"><span class="constructor">SettlmentMissingErr</span></span></code></td>
+
+</tr>
+<tr>
+<td align="left" valign="top" >
+<code><span class="keyword">|</span></code></td>
+<td align="left" valign="top" >
+<code><span id="TYPEELTerror.NotAnEdgeErr"><span class="constructor">NotAnEdgeErr</span></span></code></td>
+
+</tr></table>
+
+
+
+<pre><code><span id="TYPEaction"><span class="keyword">type</span> <code class="type"></code>action</span> = </code></pre><table class="typetable">
+<tr>
+<td align="left" valign="top" >
+<code><span class="keyword">|</span></code></td>
+<td align="left" valign="top" >
+<code><span id="TYPEELTaction.Success"><span class="constructor">Success</span></span> <span class="keyword">of</span> <code class="type"><a href="Board.html#TYPEboard">board</a></code></code></td>
+
+</tr>
+<tr>
+<td align="left" valign="top" >
+<code><span class="keyword">|</span></code></td>
+<td align="left" valign="top" >
+<code><span id="TYPEELTaction.Failure"><span class="constructor">Failure</span></span> <span class="keyword">of</span> <code class="type"><a href="Board.html#TYPEerror">error</a> * <a href="Board.html#TYPEboard">board</a></code></code></td>
+
+</tr></table>
+
+
+
+<pre><span id="VALinstantiate_board"><span class="keyword">val</span> instantiate_board</span> : <code class="type"><a href="Board.html#TYPEboard">board</a></code></pre>
+<pre><span id="VALadd_settlement"><span class="keyword">val</span> add_settlement</span> : <code class="type">int -> <a href="Board.html#TYPEplayer">player</a> -> <a href="Board.html#TYPEboard">board</a> -> <a href="Board.html#TYPEaction">action</a></code></pre>
+<pre><span id="VALadd_settlement_pregame"><span class="keyword">val</span> add_settlement_pregame</span> : <code class="type">int -> <a href="Board.html#TYPEplayer">player</a> -> <a href="Board.html#TYPEboard">board</a> -> <a href="Board.html#TYPEaction">action</a></code></pre>
+<pre><span id="VALadd_city"><span class="keyword">val</span> add_city</span> : <code class="type">int -> <a href="Board.html#TYPEplayer">player</a> -> <a href="Board.html#TYPEboard">board</a> -> <a href="Board.html#TYPEaction">action</a></code></pre>
+<pre><span id="VALadd_road"><span class="keyword">val</span> add_road</span> : <code class="type">int -> int -> <a href="Board.html#TYPEplayer">player</a> -> <a href="Board.html#TYPEboard">board</a> -> <a href="Board.html#TYPEaction">action</a></code></pre>
+<pre><span id="VALadd_road_pregame"><span class="keyword">val</span> add_road_pregame</span> : <code class="type">int -> int -> <a href="Board.html#TYPEplayer">player</a> -> <a href="Board.html#TYPEboard">board</a> -> <a href="Board.html#TYPEaction">action</a></code></pre>
+<pre><code><span id="TYPEresource_hoard"><span class="keyword">type</span> <code class="type"></code>resource_hoard</span> = {</code></pre><table class="typetable">
+<tr>
+<td align="left" valign="top" >
+<code>&nbsp;&nbsp;</code></td>
+<td align="left" valign="top" >
+<code><span id="TYPEELTresource_hoard.wheat">wheat</span>&nbsp;: <code class="type">int</code>;</code></td>
+
+</tr>
+<tr>
+<td align="left" valign="top" >
+<code>&nbsp;&nbsp;</code></td>
+<td align="left" valign="top" >
+<code><span id="TYPEELTresource_hoard.ore">ore</span>&nbsp;: <code class="type">int</code>;</code></td>
+
+</tr>
+<tr>
+<td align="left" valign="top" >
+<code>&nbsp;&nbsp;</code></td>
+<td align="left" valign="top" >
+<code><span id="TYPEELTresource_hoard.wool">wool</span>&nbsp;: <code class="type">int</code>;</code></td>
+
+</tr>
+<tr>
+<td align="left" valign="top" >
+<code>&nbsp;&nbsp;</code></td>
+<td align="left" valign="top" >
+<code><span id="TYPEELTresource_hoard.brick">brick</span>&nbsp;: <code class="type">int</code>;</code></td>
+
+</tr>
+<tr>
+<td align="left" valign="top" >
+<code>&nbsp;&nbsp;</code></td>
+<td align="left" valign="top" >
+<code><span id="TYPEELTresource_hoard.lumber">lumber</span>&nbsp;: <code class="type">int</code>;</code></td>
+
+</tr></table>
+}
+
+
+
+<pre><span id="VALget_resources"><span class="keyword">val</span> get_resources</span> : <code class="type">int -> <a href="Board.html#TYPEboard">board</a> -> <a href="Board.html#TYPEresource_hoard">resource_hoard</a> * <a href="Board.html#TYPEresource_hoard">resource_hoard</a></code></pre>
+<pre><span id="VALlongest_road"><span class="keyword">val</span> longest_road</span> : <code class="type"><a href="Board.html#TYPEplayer">player</a> -> <a href="Board.html#TYPEboard">board</a> -> int</code></pre>
+<pre><span id="VALprint_map"><span class="keyword">val</span> print_map</span> : <code class="type"><a href="Board.html#TYPEboard">board</a> -> unit</code></pre>
+<pre><span id="VALget_robber_tile"><span class="keyword">val</span> get_robber_tile</span> : <code class="type"><a href="Board.html#TYPEboard">board</a> -> string</code></pre>
+<pre><span id="VALcan_robber_steal_card"><span class="keyword">val</span> can_robber_steal_card</span> : <code class="type"><a href="Board.html#TYPEplayer">player</a> -> <a href="Board.html#TYPEboard">board</a> -> bool</code></pre>
+<pre><span id="VALcheck_player_three_to_one"><span class="keyword">val</span> check_player_three_to_one</span> : <code class="type"><a href="Board.html#TYPEplayer">player</a> -> <a href="Board.html#TYPEboard">board</a> -> bool</code></pre>
+<pre><span id="VALcheck_player_two_to_one"><span class="keyword">val</span> check_player_two_to_one</span> : <code class="type"><a href="Board.html#TYPEplayer">player</a> -> string -> <a href="Board.html#TYPEboard">board</a> -> bool</code></pre>
+<pre><span id="VALset_robber_tile"><span class="keyword">val</span> set_robber_tile</span> : <code class="type">char -> <a href="Board.html#TYPEboard">board</a> -> <a href="Board.html#TYPEboard">board</a></code></pre></body></html>

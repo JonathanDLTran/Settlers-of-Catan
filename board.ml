@@ -560,9 +560,70 @@ let add_road_pregame node1 node2 player board =
 
 (* ######### Road Length algorithm ######## *)
 
-(** [longest_road board] is the Some of the player and the length of the longest road
-    on [board]. None if there is no longest road, e.g a tie.  *)
-let longest_road board = 
+(** [get_player_edges player edge_list acc] are the edges from [edge_list]
+    that [player] controls on the board.  *)
+let rec get_player_edges player edge_list acc = 
+  match edge_list with 
+  | [] -> acc 
+  | (n1, n2, p) :: t ->  
+    if player = p then get_player_edges player t ((n1, n2) :: acc)
+    else get_player_edges player t acc
+
+(** [player_unique_nodes edges] are the unique nodes in [edges]
+    sorted in ascending order.  *)
+let player_unique_nodes edges = 
+  edges
+  |> List.split
+  |> (fun (lst1, lst2) -> lst1 @ lst2)
+  |> List.sort_uniq compare
+
+(** [check_visited node edges] is [true] iff
+    [node] in [nodes_visited] and thus has been visited.
+    Requires: [node] is a node connected in [edges]. *)
+let check_visited node nodes_visited = 
+  List.mem node nodes_visited
+
+(** [get_neighbors node edges acc] are the neighbors of
+    [node] in [edges].
+    Requires: [node] is a node connected in [edges]. *)
+let rec get_neighbors node edges acc = 
+  match edges with 
+  | [] -> acc
+  | (n1, n2) :: t ->
+    if n1 = node then get_neighbors node t (n2 :: acc)
+    else if n2 = node then get_neighbors node t (n1 :: acc)
+    else get_neighbors node t (acc)
+
+let rec choose_neighbor_to_visit = 
+  failwith "Unimplemented"
+
+(** [fixed_node_longest node edges nodes_visited hash_table] is the length of the longest
+    path that passes through [node] in [edges].updates [nodes_visited] every time 
+    an unvisited node is visited for the first time.
+    Requires: [node] is unvisited before visiting.
+    Updates hash table each time the three longest paths
+    enter a node is known, and if possible also uses
+    memoized information in the [hash_table] to determine
+    longest path
+    Imperative with Hashtable. *)
+and fixed_node_longest node edges nodes_visited hash_table = 
+  (* add node to nodes_visited *)
+  let nodes_visited' = node :: nodes_visited in 
+  let neighbors = get_neighbors node edges [] in 
+  (* No neighbors -> return as finished with length 0 (no paths emanating from this node) *)
+  match neighbors with 
+  | [] -> 0 
+  | h :: t -> begin
+      if not (check_visited h nodes_visited') then 
+
+    end
+
+(** [longest_road board] is the length of the longest road
+    on [board] for [player].  Imperative with Hashtable. *)
+let longest_road player board = 
+  let player_edges = get_player_edges player board.edges_occupied [] in 
+  let unique_nodes = player_unique_nodes player_edges in 
+  let hash_table = Hashtbl.create (List.length unique_nodes) in 
   failwith "Unimplemented"
 
 (* ########## PORTS ############ *)

@@ -47,7 +47,7 @@ type resource_hoard = {
 
 val get_resources : int -> board -> resource_hoard * resource_hoard
 
-val longest_road : board -> (int * player) option
+val longest_road : player -> board -> int
 
 val print_map : board -> unit
 

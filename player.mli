@@ -54,6 +54,8 @@ val halve_hand : player -> player
 val randomly_remove_cards : int -> player -> player
 val robber_choose_random_card : player -> resource option
 
+val check_tradeable_n : int -> player -> resource -> bool
+val trade_resources_n : int -> int -> player -> resource -> resource -> player
 val check_tradeable_4 : player -> resource -> bool
 val trade_resources_4 : player -> resource -> resource -> player
 val check_tradeable_3 : player -> resource -> bool

@@ -227,12 +227,12 @@ let check_tradeable_n n player resource =
   | Brick -> player.brick >= n
   | Lumber -> player.lumber >= n
 
-let trade_resources_n n player res_start res_end = 
-  if not (check_tradeable_n n player res_start) then player
+let trade_resources_n n_start n_end player res_start res_end = 
+  if not (check_tradeable_n n_start player res_start) then player
   else 
     bulk_add_resources 
-      (bulk_remove_resources player [(res_start, n)])  
-      [(res_end, 1)]
+      (bulk_remove_resources player [(res_start, n_start)])  
+      [(res_end, n_end)]
 
 let check_tradeable_4 player resource = 
   check_tradeable_n 4 player resource
@@ -244,7 +244,7 @@ let check_tradeable_4 player resource =
    | Lumber -> player.lumber >= 4 *)
 
 let trade_resources_4 player res_start res_end = 
-  trade_resources_n 4 player res_start res_end
+  trade_resources_n 4 1 player res_start res_end
 (* if not (check_tradeable_4 player res_start) then player
    else 
    bulk_add_resources 
@@ -255,13 +255,13 @@ let check_tradeable_3 player resource =
   check_tradeable_n 3 player resource
 
 let trade_resources_3 player res_start res_end = 
-  trade_resources_n 3 player res_start res_end
+  trade_resources_n 3 1 player res_start res_end
 
 let check_tradeable_2 player resource = 
   check_tradeable_n 2 player resource
 
 let trade_resources_2 player res_start res_end = 
-  trade_resources_n 2 player res_start res_end
+  trade_resources_n 2 1 player res_start res_end
 
 
 let knights_to_list player = [

@@ -91,6 +91,16 @@ let stolen_card_msg resource =
    | Player.Brick -> "brick")
   |> (fun res -> ANSITerminal.(print_string [green] ("You stole a " ^ res) ))
 
+let marine_trade_msg res1 res2 = 
+  ANSITerminal.(print_string [green] ("Attempting marine trade four " ^ res1 ^ " for one " ^ res2 ^ ".\n"))
+
+let marine_trade_success res1 res2 = 
+  ANSITerminal.(print_string [green] ("Successfully traded four " ^ res1 ^ " for one " ^ res2 ^ ".\n"))
+
+let marine_trade_fail () = 
+  ANSITerminal.(print_string [green] "Marine trade failed. ")
+
+
 (* ########## GAME UTILITIES ####### *)
 
 let roll () = 
@@ -101,6 +111,16 @@ let roll () =
   let dice_roll = die1 + die2 in 
   "You rolled a : " ^ string_of_int dice_roll |> print_endline;
   dice_roll
+
+(* ######## CONVERSIONS ######### *)
+
+let cmd_res_to_plyr_res cmd_res = 
+  if cmd_res = "lumber" then Player.Lumber
+  else if cmd_res = "ore" then Player.Ore
+  else if cmd_res = "wool" then Player.Wool
+  else if cmd_res = "brick" then Player.Brick
+  else if cmd_res = "wheat" then Player.Wheat
+  else failwith "command cannot give another substance"
 
 (* ######## GAME ACTIONS ####### *)
 
@@ -281,7 +301,27 @@ and handle_city n color player (p1, p2, board) =
   else execute_player player (p1, p2, board)
 
 and handle_marine_trade (start, ending) color player (p1, p2, board) =  
-  failwith "Unimplemented"
+  marine_trade_msg start ending;
+  if player then begin
+    if not (check_tradeable_4 p1 (cmd_res_to_plyr_res start)) then let () = marine_trade_fail () in execute_player player (p1, p2, board)
+    else 
+      let p1' = trade_resources_4 p1 (cmd_res_to_plyr_res start) (cmd_res_to_plyr_res ending) in 
+      marine_trade_success start ending;
+      execute_player player (p1', p2, board)
+  end
+  else begin
+    if not (check_tradeable_4 p2 (cmd_res_to_plyr_res start)) then let () = marine_trade_fail () in execute_player player (p1, p2, board)
+    else 
+      let p2' = trade_resources_4 p2 (cmd_res_to_plyr_res start) (cmd_res_to_plyr_res ending) in 
+      marine_trade_success start ending;
+      execute_player player (p1, p2', board)
+  end
+
+and handle_two_trade (start, ending) color player (p1, p2, board) =   
+  failwith "Unimplemented" 
+
+and handle_three_trade (start, ending) color player (p1, p2, board) =   
+  failwith "Unimplemented" 
 
 and handle_player_trade 
     (start, start_amt, ending, ending_amt) color player (p1, p2, board) =  
@@ -307,8 +347,8 @@ and execute_player player (p1, p2, board) =
   | BuildCity n -> handle_city n color player (p1, p2, board)
   | MarineTrade (start, ending) -> 
     handle_marine_trade (start, ending) color player (p1, p2, board)
-  | TwoTrade (start, ending) -> failwith "Unimplemented"
-  | ThreeTrade (start, ending) -> failwith "Unimplemented"
+  | TwoTrade (start, ending) -> handle_two_trade (start, ending) color player (p1, p2, board) 
+  | ThreeTrade (start, ending) -> handle_three_trade (start, ending) color player (p1, p2, board) 
   | PlayerTrade (start, start_amt, ending, ending_amt) -> 
     handle_player_trade 
       (start, start_amt, ending, ending_amt) color player (p1, p2, board)

@@ -1,0 +1,55 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+<head>
+<link rel="stylesheet" href="style.css" type="text/css">
+<meta content="text/html; charset=iso-8859-1" http-equiv="Content-Type">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="Start" href="index.html">
+<link rel="previous" href="Board_settings.html">
+<link rel="next" href="Game.html">
+<link rel="Up" href="index.html">
+<link title="Index of types" rel=Appendix href="index_types.html">
+<link title="Index of values" rel=Appendix href="index_values.html">
+<link title="Index of modules" rel=Appendix href="index_modules.html">
+<link title="Board_settings" rel="Chapter" href="Board_settings.html">
+<link title="Pregame" rel="Chapter" href="Pregame.html">
+<link title="Game" rel="Chapter" href="Game.html">
+<link title="Deck" rel="Chapter" href="Deck.html">
+<link title="Command" rel="Chapter" href="Command.html">
+<link title="Board" rel="Chapter" href="Board.html">
+<link title="Player" rel="Chapter" href="Player.html"><title>Pregame</title>
+</head>
+<body>
+<div class="navbar"><a class="pre" href="Board_settings.html" title="Board_settings">Previous</a>
+&nbsp;<a class="up" href="index.html" title="Index">Up</a>
+&nbsp;<a class="post" href="Game.html" title="Game">Next</a>
+</div>
+<h1>Module <a href="type_Pregame.html">Pregame</a></h1>
+
+<pre><span id="MODULEPregame"><span class="keyword">module</span> Pregame</span>: <code class="code">sig</code> <a href="Pregame.html">..</a> <code class="code">end</code></pre><hr width="100%">
+
+<pre><span id="TYPEpregame_info"><span class="keyword">type</span> <code class="type"></code>pregame_info</span> = <code class="type"><a href="Player.html#TYPEt">Player.t</a> * <a href="Player.html#TYPEt">Player.t</a> * <a href="Board.html#TYPEt">Board.t</a></code> </pre>
+
+
+<pre><code><span id="TYPEpregame"><span class="keyword">type</span> <code class="type"></code>pregame</span> = </code></pre><table class="typetable">
+<tr>
+<td align="left" valign="top" >
+<code><span class="keyword">|</span></code></td>
+<td align="left" valign="top" >
+<code><span id="TYPEELTpregame.PreContinue"><span class="constructor">PreContinue</span></span> <span class="keyword">of</span> <code class="type"><a href="Pregame.html#TYPEpregame_info">pregame_info</a></code></code></td>
+
+</tr>
+<tr>
+<td align="left" valign="top" >
+<code><span class="keyword">|</span></code></td>
+<td align="left" valign="top" >
+<code><span id="TYPEELTpregame.PreQuit"><span class="constructor">PreQuit</span></span></code></td>
+
+</tr></table>
+
+
+
+<pre><span id="VALreturn_game"><span class="keyword">val</span> return_game</span> : <code class="type"><a href="Pregame.html#TYPEpregame_info">pregame_info</a> -> <a href="Pregame.html#TYPEpregame">pregame</a></code></pre>
+<pre><span id="VALbind"><span class="keyword">val</span> bind</span> : <code class="type">(<a href="Pregame.html#TYPEpregame_info">pregame_info</a> -> <a href="Pregame.html#TYPEpregame">pregame</a>) -><br>       <a href="Pregame.html#TYPEpregame">pregame</a> -> <a href="Pregame.html#TYPEpregame">pregame</a></code></pre>
+<pre><span id="VAL(>>=)"><span class="keyword">val</span> (&gt;&gt;=)</span> : <code class="type">(<a href="Pregame.html#TYPEpregame_info">pregame_info</a> -> <a href="Pregame.html#TYPEpregame">pregame</a>) -><br>       <a href="Pregame.html#TYPEpregame">pregame</a> -> <a href="Pregame.html#TYPEpregame">pregame</a></code></pre>
+<pre><span id="VALinstantiate_pregame"><span class="keyword">val</span> instantiate_pregame</span> : <code class="type">unit -> <a href="Pregame.html#TYPEpregame">pregame</a></code></pre></body></html>
