@@ -18,6 +18,8 @@ type player = {
   monopoly : int;
   victory_cards : int;
 
+  dev_played_already : bool;
+
   len_longest_road : int;
 
   longest_road : bool;
@@ -48,6 +50,8 @@ let initialize_player = {
   monopoly = 0;
   victory_cards = 0;
 
+  dev_played_already = false;
+
   len_longest_road = 0;
 
   longest_road = false;
@@ -69,6 +73,14 @@ let cheat_augment_resources player = {
   ore = player.ore + 100;
   wool = player.wool + 100;
   lumber = player.lumber + 100;
+}
+
+let add_dev_card_played_already player = {
+  player with dev_played_already = true;
+}
+
+let reset_dev_played player = {
+  player with dev_played_already = false;
 }
 
 (** [rool () is the dice roll of the player. ] *)
@@ -207,20 +219,49 @@ let halve_hand player =
   end
   else player 
 
-let check_tradeable_4 player resource = 
+let check_tradeable_n n player resource = 
   match resource with
-  | Ore -> player.ore >= 4
-  | Wheat -> player.wheat >= 4
-  | Wool -> player.wool >= 4
-  | Brick -> player.brick >= 4
-  | Lumber -> player.lumber >= 4
+  | Ore -> player.ore >= n
+  | Wheat -> player.wheat >= n
+  | Wool -> player.wool >= n
+  | Brick -> player.brick >= n
+  | Lumber -> player.lumber >= n
 
-let trade_resources_4 player res_start res_end = 
-  if not (check_tradeable_4 player res_start) then player
+let trade_resources_n n player res_start res_end = 
+  if not (check_tradeable_n n player res_start) then player
   else 
     bulk_add_resources 
-      (bulk_remove_resources player [(res_start, 4)])  
+      (bulk_remove_resources player [(res_start, n)])  
       [(res_end, 1)]
+
+let check_tradeable_4 player resource = 
+  check_tradeable_n 4 player resource
+(* match resource with
+   | Ore -> player.ore >= 4
+   | Wheat -> player.wheat >= 4
+   | Wool -> player.wool >= 4
+   | Brick -> player.brick >= 4
+   | Lumber -> player.lumber >= 4 *)
+
+let trade_resources_4 player res_start res_end = 
+  trade_resources_n 4 player res_start res_end
+(* if not (check_tradeable_4 player res_start) then player
+   else 
+   bulk_add_resources 
+    (bulk_remove_resources player [(res_start, 4)])  
+    [(res_end, 1)] *)
+
+let check_tradeable_3 player resource = 
+  check_tradeable_n 3 player resource
+
+let trade_resources_3 player res_start res_end = 
+  trade_resources_n 3 player res_start res_end
+
+let check_tradeable_2 player resource = 
+  check_tradeable_n 2 player resource
+
+let trade_resources_2 player res_start res_end = 
+  trade_resources_n 2 player res_start res_end
 
 
 let knights_to_list player = [

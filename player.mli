@@ -23,6 +23,8 @@ val dev_to_tuple : player -> (int * int * int)
 val has_resources_dev : player -> bool
 val add_dev : dev -> player -> player
 val play_dev : dev -> player -> player
+val add_dev_card_played_already : player -> player
+val reset_dev_played : player -> player
 
 val is_longest_road : player -> bool
 val is_largest_army : player -> bool
@@ -54,6 +56,10 @@ val robber_choose_random_card : player -> resource option
 
 val check_tradeable_4 : player -> resource -> bool
 val trade_resources_4 : player -> resource -> resource -> player
+val check_tradeable_3 : player -> resource -> bool
+val trade_resources_3 : player -> resource -> resource -> player
+val check_tradeable_2 : player -> resource -> bool
+val trade_resources_2 : player -> resource -> resource -> player
 
 val print_string_of_player_info : player -> unit
 
