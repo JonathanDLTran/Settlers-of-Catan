@@ -23,10 +23,13 @@ type command =
   | Buy
   | Finish
   | Map
+  | Cheat
   | BuildRoad of int * int 
   | BuildSettlement of int 
   | BuildCity of int 
   | MarineTrade of start_resource * end_resource
+  | ThreeTrade of start_resource * end_resource
+  | TwoTrade of start_resource * end_resource
   | PlayerTrade of start_resource * start_amt * end_resource * end_amt
 
 let is_alpha c = 
@@ -53,9 +56,12 @@ let c_BUY = "buy"
 let c_STRUCTURES_LIST = ["city"; "road"; "settlement"]
 let c_MARINE = "marinetrade"
 let c_PLAYER = "playertrade"
+let c_TWOTRADE = "twotrade"
+let c_THREETRADE = "threetrade"
 let c_RESOURCES_LIST = ["lumber"; "ore"; "wool"; "brick"; "wheat"]
 let c_FINISH = "finish"
 let c_MAP = "map"
+let c_CHEAT = "cheat"
 
 let string_to_command str_list = 
   match str_list with
@@ -66,6 +72,7 @@ let string_to_command str_list =
     else if h = c_BUY then Buy
     else if h = c_FINISH then Finish
     else if h = c_MAP then Map
+    else if h = c_CHEAT then Cheat
     else Invalid
   | h1 :: h2 :: [] when h1 = c_BUILDSETTLEMENT ->
     if string_is_digit h2 
@@ -79,6 +86,16 @@ let string_to_command str_list =
     if string_is_digit h2 && string_is_digit h3 
     then BuildRoad (int_of_string h2, int_of_string h3)
     else Invalid 
+  | h1 :: h2 :: h3 :: [] when h1 = c_TWOTRADE ->
+    if List.mem h2 c_RESOURCES_LIST 
+    && List.mem h3 c_RESOURCES_LIST 
+    then TwoTrade (h2, h3)
+    else Invalid
+  | h1 :: h2 :: h3 :: [] when h1 = c_THREETRADE ->
+    if List.mem h2 c_RESOURCES_LIST 
+    && List.mem h3 c_RESOURCES_LIST 
+    then ThreeTrade (h2, h3)
+    else Invalid
   | h1 :: h2 :: h3 :: [] ->
     if h1 = c_MARINE 
     && List.mem h2 c_RESOURCES_LIST 
@@ -125,3 +142,20 @@ let string_to_affirmation s =
 
 let parse_affirmative s = 
   s |> clean |> string_to_affirmation
+
+type robber = 
+  | NotLocation
+  | NewLocation of string
+
+let string_to_tile s = 
+  match s with 
+  | str :: [] ->
+    if String.length str > 1 then  NotLocation 
+    else 
+      let c = String.get str 0 in 
+      if is_alpha c && c >= 'a' && c <= 's' then NewLocation (str)
+      else NotLocation
+  | _ -> NotLocation
+
+let parse_robber s = 
+  s |> clean |> string_to_tile

@@ -3,3 +3,4 @@ PKG oUnit
 PKG ANSITerminal
 PKG qcheck
 PKG Str
+PKG emoji

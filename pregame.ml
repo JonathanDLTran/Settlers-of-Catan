@@ -65,12 +65,12 @@ let color_of_player player =
   else ANSITerminal.red
 
 let play_settlement player (p1, p2) = 
-  if player then (add_piece p1 (Player.Settlement)), p2
-  else (p1, add_piece p2 (Player.Settlement))
+  if player then (add_piece_pregame p1 (Player.Settlement)), p2
+  else (p1, add_piece_pregame p2 (Player.Settlement))
 
 let play_road player (p1, p2) = 
-  if player then (add_piece p1 (Player.Road)), p2
-  else (p1, add_piece p2 (Player.Road))
+  if player then (add_piece_pregame p1 (Player.Road)), p2
+  else (p1, add_piece_pregame p2 (Player.Road))
 
 let rec place_player_road player (p1, p2, board) = 
   print_map board;

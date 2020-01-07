@@ -2,9 +2,14 @@ open Pregame
 open Game
 open Board_settings
 
+let opening_msg () = 
+  ANSITerminal.(print_string [cyan; Bold;] "\nWelcome to Settlers of Catan!");
+  ANSITerminal.(print_string [cyan; Bold;] "\nWritten by Jonathan Tran (jdt98) in OCaml")
+
 let () = 
-  () 
+  ()
   |> set_screen_size
+  |> opening_msg
   |> instantiate_pregame 
   |> instantiate_game
 

@@ -2,6 +2,7 @@
 #require "ANSITerminal";;
 #require "qcheck";;
 #require "Str";;
+#require "emoji";;
 #directory "_build";;
 #load "board.cmo";;
 #load "player.cmo";;

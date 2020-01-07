@@ -259,6 +259,22 @@ let set_robber_tile c board =
   assert (c >= 'A' && c <= 'S');
   {board with robber_node = c |> Char.escaped |> string_to_tile}
 
+(** [player_tile_intersect player board] is [true] iff
+    [player] has a node on the [tile] in [board]. *)
+let player_tile_intersect tile player board = 
+  let tile_nodes = tile_to_node tile in 
+  let player_nodes = 
+    board.nodes_occupied
+    |> List.filter (fun (n, p, s) -> p = player)
+    |> List.map (fun (n, p, s) -> n) in 
+  List.exists (fun player_node -> List.mem player_node tile_nodes) player_nodes
+
+(** [can_robber_steal_card  player board] is [true] iff
+    [player] has a node on the tile of the robber in [board]. *)
+let can_robber_steal_card player board = 
+  let tile = board.robber_node in 
+  player_tile_intersect tile player board
+
 (* ##### Settlements ######### *)
 
 (** [check_neighbors node node_list] is [true] iff [node]'s neighbors 

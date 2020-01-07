@@ -53,6 +53,8 @@ val print_map : board -> unit
 
 val get_robber_tile : board -> string
 
+val can_robber_steal_card : player -> board -> bool
+
 val check_player_three_to_one : player -> board -> bool
 
 val check_player_two_to_one : player -> string -> board -> bool
