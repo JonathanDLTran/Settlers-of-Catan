@@ -12,6 +12,7 @@ type command =
   | Finish
   | Map
   | Cheat
+  | Length
   | BuildRoad of int * int 
   | BuildSettlement of int 
   | BuildCity of int 

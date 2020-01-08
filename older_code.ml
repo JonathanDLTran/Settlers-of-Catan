@@ -381,7 +381,18 @@ let generate_custom robber_tile edges =
   |> split_list 6 [] 
   |> fun (preset, offset) -> edge_replacement edges_list preset offset 
 
+(*
+build_settlement 21
+build_road 21 27
+build_settlement 1
+build_road 1 4
+build_settlement 54
+build_road 51 54
+build_settlement 25
+build_road 19 25
 
+
+*)
 
 (* 
 let generate_custom1 robber_tile edge_array = 

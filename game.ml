@@ -100,7 +100,6 @@ let marine_trade_success res1 res2 =
 let marine_trade_fail () = 
   ANSITerminal.(print_string [green] "Marine trade failed. ")
 
-
 (* ########## GAME UTILITIES ####### *)
 
 let roll () = 
@@ -331,11 +330,16 @@ and handle_cheat player (p1, p2, board) =
   if player then execute_player player (cheat_augment_resources p1, p2, board)
   else execute_player player (p1, cheat_augment_resources p2, board)
 
+and handle_length player (p1, p2, board) = 
+  let length = longest_road player board in 
+  ANSITerminal.(print_string [green] ("\nYour longest road has length: " ^ string_of_int length ^ ".\n"))
+
 and execute_player player (p1, p2, board) = 
   let color = color_of_player player in 
   player_turn_msg player;
   match () |> read_line |> parse with 
   | Quit -> quit_msg (); GameQuit
+  | Length -> handle_length player (p1, p2, board); execute_player player (p1, p2, board)
   | Finish -> handle_victory player (p1, p2, board) (* finish turn and switch to next player *)
   | Invalid -> invalid_msg (); execute_player player (p1, p2, board)
   | Show -> handle_show player (p1, p2, board); execute_player player (p1, p2, board)

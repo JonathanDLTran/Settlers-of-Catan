@@ -594,8 +594,40 @@ let rec get_neighbors node edges acc =
     else if n2 = node then get_neighbors node t (n1 :: acc)
     else get_neighbors node t (acc)
 
-let rec choose_neighbor_to_visit = 
-  failwith "Unimplemented"
+let my_max lst = 
+  match lst with 
+  | [] -> failwith "lst cannot be empty"
+  | h :: [] -> h 
+  | h :: t as lst ->
+    lst 
+    |> List.sort compare 
+    |> List.rev
+    |> (fun l -> List.nth l 0 + List.nth l 1)
+
+let all_nodes_visited neighbors nodes_visited = 
+  List.exists (fun node -> List.mem node nodes_visited) neighbors
+
+let rec get_unvisited_nodes neighbors nodes_visited acc = 
+  match neighbors with 
+  | [] -> acc
+  | h :: t ->
+    if List.mem h nodes_visited then get_unvisited_nodes t nodes_visited acc 
+    else get_unvisited_nodes t nodes_visited (h :: acc) 
+
+(* let rec visit_neighbor node edges nodes_visited hash_table =
+   if not (check_visited node nodes_visited) then fixed_node_longest node edges nodes_visited hash_table
+   else 
+    (* let length, nodes_visited' = fixed_node_longest node edges nodes_visited hash_table in *)
+    failwith "Unimplemented" *)
+
+let top_two_max x y z = 
+  [x; y; z]
+  |> List.sort compare 
+  |> List.rev 
+  |> (fun l -> 
+      match l with 
+      | x :: y :: z :: [] -> x + y 
+      | _ -> failwith "Precondition: all lists have three elements")
 
 (** [fixed_node_longest node edges nodes_visited hash_table] is the length of the longest
     path that passes through [node] in [edges].updates [nodes_visited] every time 
@@ -606,17 +638,55 @@ let rec choose_neighbor_to_visit =
     memoized information in the [hash_table] to determine
     longest path
     Imperative with Hashtable. *)
-and fixed_node_longest node edges nodes_visited hash_table = 
-  (* add node to nodes_visited *)
-  let nodes_visited' = node :: nodes_visited in 
+let rec fixed_node_longest node edges nodes_visited hash_table = 
   let neighbors = get_neighbors node edges [] in 
-  (* No neighbors -> return as finished with length 0 (no paths emanating from this node) *)
-  match neighbors with 
-  | [] -> 0 
-  | h :: t -> begin
-      if not (check_visited h nodes_visited') then 
+  let nodes_visited' = node :: nodes_visited in 
+  if List.length neighbors = 1 && all_nodes_visited neighbors nodes_visited' then (0, nodes_visited') (* ending tail case *)
+  else if all_nodes_visited neighbors nodes_visited' then (1, nodes_visited') (* circular case *)
+  else begin 
+    let unvisited = get_unvisited_nodes neighbors nodes_visited' [] in 
+    match unvisited with 
+    | [] -> failwith "Must have at least one neighbor"
+    | h :: [] -> 
+      let length1, nodes_visited1 = fixed_node_longest h edges nodes_visited' hash_table in 
+      (1 + length1, nodes_visited1)
+    | h1 :: h2 :: [] -> 
+      let length1, nodes_visited1 = fixed_node_longest h1 edges nodes_visited' hash_table in 
+      let length2, nodes_visited2 = fixed_node_longest h2 edges nodes_visited1 hash_table in 
+      (1 + length1 + 1 + length2, nodes_visited2)
+    | h1 :: h2 :: h3 :: [] ->
+      let length1, nodes_visited1 = fixed_node_longest h1 edges nodes_visited' hash_table in 
+      let length2, nodes_visited2 = fixed_node_longest h2 edges nodes_visited1 hash_table in
+      let length3, nodes_visited3 = fixed_node_longest h3 edges nodes_visited2 hash_table in  
+      length1 |> string_of_int |> print_endline;
+      length2 |> string_of_int |> print_endline;
+      length3 |> string_of_int |> print_endline;
+      (1 + 1 + top_two_max length1 length2 length3, nodes_visited3)
+    | h :: t -> failwith "Cannot have more than three neighbors"
+  end
+(* | [] -> 
+   | h :: t as list ->
+   List.fold_left (fun (x, y) n -> ) (nodes_visited', []) list
 
-    end
+    if not (check_visited h nodes_visited') then 1 + fixed_node_longest h edges nodes_visited' hash_table *)
+
+
+(* if Hashtbl.mem hash_table node then Hashtbl.find hash_table node |> my_max 
+   else begin 
+   (* add node to nodes_visited *)
+   let nodes_visited' = node :: nodes_visited in 
+   let neighbors = get_neighbors node edges [] in 
+   (* No neighbors -> return as finished with length 0 (no paths emanating from this node) *)
+   match neighbors with 
+   | [] -> failwith "node must have at least one neighbor on the map"
+   | h :: t as lst -> 
+    lst 
+    |> List.map (fun n -> if not (check_visited n nodes_visited') then let length = fixed_node_longest n edges nodes_visited' hash_table in Hashtbl.add hash_table n ((1 + length) :: Hashtbl.find hash_table node); 1 + length else let () = Hashtbl.add hash_table n (1 :: Hashtbl.find hash_table node) in 1) 
+    |> my_max
+   end *)
+
+let get_max start lst = 
+  List.fold_left (fun init n -> if n > init then n else init) start lst
 
 (** [longest_road board] is the length of the longest road
     on [board] for [player].  Imperative with Hashtable. *)
@@ -624,7 +694,10 @@ let longest_road player board =
   let player_edges = get_player_edges player board.edges_occupied [] in 
   let unique_nodes = player_unique_nodes player_edges in 
   let hash_table = Hashtbl.create (List.length unique_nodes) in 
-  failwith "Unimplemented"
+  unique_nodes
+  |> List.map (fun n -> fixed_node_longest n player_edges [] hash_table) 
+  |> List.map (fun (length, _) -> length)
+  |> (fun l -> get_max (List.hd l) l)
 
 (* ########## PORTS ############ *)
 
