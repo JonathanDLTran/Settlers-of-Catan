@@ -25,6 +25,7 @@ type command =
   | Map
   | Cheat
   | Length
+  | Play of string
   | BuildRoad of int * int 
   | BuildSettlement of int 
   | BuildCity of int 
@@ -64,6 +65,8 @@ let c_FINISH = "finish"
 let c_MAP = "map"
 let c_CHEAT = "cheat"
 let c_LENGTH = "length"
+let c_PLAY_LIST = ["monopoly"; "year"; "road"; "victory"; "knight"]
+let c_PLAY = "play"
 
 let string_to_command str_list = 
   match str_list with
@@ -76,6 +79,10 @@ let string_to_command str_list =
     else if h = c_MAP then Map
     else if h = c_CHEAT then Cheat
     else if h = c_LENGTH then Length
+    else Invalid
+  | h1 :: h2 :: [] when h1 = c_PLAY ->
+    if List.mem h2 c_PLAY_LIST
+    then Play h2
     else Invalid
   | h1 :: h2 :: [] when h1 = c_BUILDSETTLEMENT ->
     if string_is_digit h2 

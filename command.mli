@@ -13,6 +13,7 @@ type command =
   | Map
   | Cheat
   | Length
+  | Play of string
   | BuildRoad of int * int 
   | BuildSettlement of int 
   | BuildCity of int 

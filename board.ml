@@ -222,6 +222,71 @@ let node_neighbors (node : int) : int list =
   if List.mem node special_nodes then special_neighbors node
   else neighbors node 
 
+(* ########## DEV CARDS ######## *)
+
+type dev = 
+  | Knight
+  | Road
+  | Year
+  | Monopoly
+  | Victory
+
+type dev_deck = dev list
+
+let c_KNIGHT = 14
+let c_ROAD_BUILD = 2
+let c_YEAR_PLENTY = 2
+let c_MONOPOLY = 2
+let c_VICTORY = 5
+
+let string_to_dev str = 
+  match str with 
+  | "knight" -> Knight 
+  | "road" -> Road 
+  | "year" -> Year 
+  | "monopoly" -> Monopoly
+  | "victory" -> Victory 
+  | _ -> failwith "cannot be any other dev type"
+
+let dev_to_string dev = 
+  match dev with 
+  | Knight -> "knight" 
+  | Road -> "road" 
+  | Year -> "year" 
+  | Monopoly -> "monopoly"
+  | Victory -> "victory" 
+
+let rec generate_n_list n value acc = 
+  if n = 0 then acc 
+  else generate_n_list (n - 1) value (value :: acc)
+
+let generate_knights = 
+  generate_n_list c_KNIGHT Knight [] 
+
+let generate_victory = 
+  generate_n_list c_VICTORY Victory [] 
+
+let generate_road_build = 
+  generate_n_list c_ROAD_BUILD Road [] 
+
+let generate_year_plenty = 
+  generate_n_list c_YEAR_PLENTY Year [] 
+
+let generate_monopoly = 
+  generate_n_list c_MONOPOLY Monopoly [] 
+
+(** [shuffle lst] is a random permutation of [lst]. *)
+let shuffle (lst : 'a list) : 'a list =
+  QCheck.Gen.(generate1 (shuffle_l lst))
+
+let init_dev_deck = 
+  generate_knights 
+  @ generate_victory 
+  @ generate_road_build 
+  @ generate_year_plenty 
+  @ generate_monopoly
+  |> shuffle
+
 (* ############ BOARD OVERVIEW ########### *)
 
 type player = bool
@@ -235,6 +300,7 @@ type board = {
   robber_node : tile;
   edges_occupied : (int * int * player) list;
   nodes_occupied : (int * player * structure) list;
+  deck : dev_deck;
 }
 
 type t = board
@@ -244,6 +310,7 @@ let instantiate_board = {
   robber_node = robber_start_tile;
   edges_occupied = [];
   nodes_occupied = [];
+  deck = init_dev_deck;
 }
 
 type error = 
@@ -256,6 +323,14 @@ type error =
 type action = 
   | Success of board
   | Failure of error * board
+
+(* ########## DEV OPS ######## *)
+
+let is_dev_empty board = 
+  board.deck = []
+
+let get_dev board = 
+  (List.hd board.deck, {board with deck = List.tl board.deck})
 
 (* ####### ROBBER ######## *)
 
@@ -1110,6 +1185,7 @@ let print_map board =
   string_of_map robber_tile board.nodes_occupied board.edges_occupied
   |> List.map print_endline
   |> ignore
+
 
 
 

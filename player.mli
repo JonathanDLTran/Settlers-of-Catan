@@ -1,7 +1,12 @@
 type player
 type t = player
 
-type dev = | Year | Monopoly | Victory
+type dev = 
+  | Knight
+  | Year
+  | Monopoly
+  | Victory
+  | Road
 type piece = | City | Settlement | Road
 type resource = | Ore | Wheat | Wool | Brick | Lumber
 
@@ -15,16 +20,18 @@ val resources_to_tuple : player -> (int * int * int * int * int)
 val bulk_add_resources : player -> (resource * int) list -> player
 val bulk_remove_resources : player -> (resource * int) list -> player
 
-val knights_to_list : player -> int list
+val knights_to_tuple : player -> (int * int)
 val add_knight : player -> player
 val play_knight : player -> player
 
-val dev_to_tuple : player -> (int * int * int)
+val dev_to_tuple : player -> (int * int * int * int)
 val has_resources_dev : player -> bool
 val add_dev : dev -> player -> player
 val play_dev : dev -> player -> player
 val add_dev_card_played_already : player -> player
-val reset_dev_played : player -> player
+val reset_dev_played : player -> player (* DEPRECATED *)
+val reset_dev_current : player -> player
+val string_to_dev : string -> dev
 
 val is_longest_road : player -> bool
 val is_largest_army : player -> bool

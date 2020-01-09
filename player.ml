@@ -14,9 +14,17 @@ type player = {
   knights_held : int;
   knights_played : int;
 
+  knights_held_current : int;
+
   year_of_plenty : int;
   monopoly : int;
+  road_building : int;
   victory_cards : int;
+
+  year_of_plenty_current : int;
+  monopoly_current : int;
+  road_building_current : int;
+  victory_cards_current : int;
 
   dev_played_already : bool;
 
@@ -46,9 +54,17 @@ let initialize_player = {
   knights_held = 0 ;
   knights_played = 0;
 
+  knights_held_current = 0;
+
   year_of_plenty = 0;
   monopoly = 0;
+  road_building = 0;
   victory_cards = 0;
+
+  year_of_plenty_current = 0;
+  monopoly_current = 0;
+  road_building_current = 0;
+  victory_cards_current = 0;
 
   dev_played_already = false;
 
@@ -75,13 +91,6 @@ let cheat_augment_resources player = {
   lumber = player.lumber + 100;
 }
 
-let add_dev_card_played_already player = {
-  player with dev_played_already = true;
-}
-
-let reset_dev_played player = {
-  player with dev_played_already = false;
-}
 
 (** [rool () is the dice roll of the player. ] *)
 let roll () = 
@@ -279,10 +288,34 @@ let player_trade_resources player res1 amt1 res2 amt2 =
     |> remove_resource_n_times) resource1 amt1 
    |> add_resource_n_times) resource2 amt2
 
-let knights_to_list player = [
-  player.knights_held;
-  player.knights_played;
-]
+(* ############ DEVELOPMENT CARDS ########## *)
+
+let add_dev_card_played_already player = {
+  player with dev_played_already = true;
+}
+
+let reset_dev_played player = {
+  player with dev_played_already = false;
+}
+
+let reset_dev_current player = {
+  player with 
+  dev_played_already = false;
+  year_of_plenty = player.year_of_plenty_current + player.year_of_plenty;
+  monopoly = player.monopoly_current + player.monopoly;
+  road_building = player.road_building_current + player.road_building;
+  victory_cards = player.victory_cards_current + player.victory_cards;
+
+  year_of_plenty_current = 0;
+  monopoly_current = 0;
+  road_building_current = 0;
+  victory_cards_current = 0;
+}
+
+let knights_to_tuple player = (
+  player.knights_held,
+  player.knights_played
+)
 
 let add_knight player = {
   player with knights_held = player.knights_held + 1
@@ -297,12 +330,30 @@ let play_knight player = {
 let dev_to_tuple player = (
   player.year_of_plenty,
   player.monopoly,
-  player.victory_cards)
+  player.victory_cards,
+  player.road_building)
+
+let dev_to_tuple_current player = (
+  player.year_of_plenty_current,
+  player.monopoly_current,
+  player.victory_cards_current,
+  player.road_building_current)
 
 type dev = 
+  | Knight
   | Year
   | Monopoly
   | Victory
+  | Road
+
+let string_to_dev str = 
+  match str with 
+  | "knight" -> Knight 
+  | "road" -> Road 
+  | "year" -> Year 
+  | "monopoly" -> Monopoly
+  | "victory" -> Victory 
+  | _ -> failwith "cannot be any other dev type"
 
 let dev_cost player = 
   {player with 
@@ -312,19 +363,26 @@ let dev_cost player =
 
 let add_dev dev player = 
   (match dev with
-   | Year -> {player with year_of_plenty = player.year_of_plenty + 1}
-   | Monopoly -> {player with monopoly = player.monopoly + 1}
-   | Victory -> {player with victory_cards = player.victory_cards + 1})
+   | Knight -> {player with knights_held_current = player.knights_held_current + 1}
+   | Year -> {player with year_of_plenty_current = player.year_of_plenty_current + 1}
+   | Monopoly -> {player with monopoly_current = player.monopoly_current + 1}
+   | Victory -> {player with victory_cards_current = player.victory_cards_current + 1}
+   | Road -> {player with road_building_current = player.road_building_current + 1})
   |> dev_cost
 
 let play_dev dev player = 
   match dev with
+  | Knight -> 
+    {player with 
+     knights_held = player.knights_held - 1;
+     knights_played = player.knights_played + 1;}
   | Year -> {player with year_of_plenty = player.year_of_plenty - 1}
   | Monopoly -> {player with monopoly = player.monopoly - 1}
   | Victory -> 
     {player with 
      victory_cards = player.victory_cards - 1;
      victory_points = player.victory_points + 1;}
+  | Road -> {player with road_building = player.road_building - 1}
 
 let has_resources_dev player = 
   player.ore >= 1 &&
@@ -340,8 +398,8 @@ let is_largest_army player =
 let set_longest_road player status = 
   if status then 
     {player with 
-     longest_road = true;
-     victory_points = player.victory_points + 2;}
+     longest_road = true;}
+    (* victory_points = player.victory_points + 2;} *)
   else 
     {player with 
      longest_road = false;}
@@ -349,8 +407,8 @@ let set_longest_road player status =
 let set_largest_army player status = 
   if status then 
     {player with 
-     largest_army = true;
-     victory_points = player.victory_points + 2;}
+     largest_army = true;}
+    (* victory_points = player.victory_points + 2;} *)
   else 
     {player with 
      largest_army = false;}
@@ -474,13 +532,16 @@ let print_string_of_player_info (p : player) =
   let settlements = p.settlements_remaining in 
   let roads = p.roads_remaining in 
   let knights_held = p.knights_held in 
+  let knights_current = p.knights_held_current in 
   let knights_played = p.knights_played in 
   let most_knights = is_largest_army p in 
-  let (y, m, vc) = dev_to_tuple p in 
+  let (y, m, vc, rb) = dev_to_tuple p in 
+  let (yc, mc, vcc, rbc) = dev_to_tuple_current p in 
   let road_length = get_length_road p in 
   let most_road = is_longest_road p in 
   let (w, b, o, wl, l) = resources_to_tuple p in 
   let victory_points = get_victory_points p in 
+  let can_play_dev = not p.dev_played_already in 
   ANSITerminal.(print_string [black] "\n");
   ANSITerminal.(print_string [red] ("\nRobber control status : " ^ string_of_bool robber_status ));
   ANSITerminal.(print_string [black] "\n");
@@ -488,13 +549,22 @@ let print_string_of_player_info (p : player) =
   ANSITerminal.(print_string [cyan] ("\nNumber of settlements remaining : " ^ string_of_int settlements ));
   ANSITerminal.(print_string [cyan] ("\nNumber of roads remaining : " ^ string_of_int roads ));
   ANSITerminal.(print_string [black] "\n");
-  ANSITerminal.(print_string [blue] ("\nNumber of knights in hand : " ^ string_of_int knights_held ));
-  ANSITerminal.(print_string [blue] ("\nNumber of knights played : " ^ string_of_int knights_played ));
+  ANSITerminal.(print_string [yellow] ("\nCan play a development card this turn: " ^ string_of_bool can_play_dev ));
+  ANSITerminal.(print_string [black] "\n");
+  ANSITerminal.(print_string [blue] ("\nNumber of Knights in hand that can be played: " ^ string_of_int knights_held ));
+  ANSITerminal.(print_string [blue] ("\nNumber of Knights in hand that cannot be played: " ^ string_of_int knights_current ));
+  ANSITerminal.(print_string [blue] ("\nNumber of Knights played already : " ^ string_of_int knights_played ));
   ANSITerminal.(print_string [blue] ("\nLargest army? : " ^ string_of_bool most_knights ));
   ANSITerminal.(print_string [black] "\n");
-  ANSITerminal.(print_string [yellow] ("\nNumber of year of plenty : " ^ string_of_int y ));
-  ANSITerminal.(print_string [yellow] ("\nNumber of monopoly : " ^ string_of_int m ));
-  ANSITerminal.(print_string [yellow] ("\nNumber of Victory Point Cards : " ^ string_of_int vc ));
+  ANSITerminal.(print_string [yellow] ("\nNumber of Year of Plenty Cards that cannot be played : " ^ string_of_int yc ));
+  ANSITerminal.(print_string [yellow] ("\nNumber of Monopoly Cards that cannot be played : " ^ string_of_int mc ));
+  ANSITerminal.(print_string [yellow] ("\nNumber of Road Building Cards that cannot be played : " ^ string_of_int vcc ));
+  ANSITerminal.(print_string [yellow] ("\nNumber of Victory Point Cards that cannot be played: " ^ string_of_int rbc ));
+  ANSITerminal.(print_string [black] "\n");
+  ANSITerminal.(print_string [yellow] ("\nNumber of Year of Plenty Cards that can be played : " ^ string_of_int y ));
+  ANSITerminal.(print_string [yellow] ("\nNumber of Monopoly Cards that can be played : " ^ string_of_int m ));
+  ANSITerminal.(print_string [yellow] ("\nNumber of Road Building Cards that can be played : " ^ string_of_int vc ));
+  ANSITerminal.(print_string [yellow] ("\nNumber of Victory Point Cards that can be played: " ^ string_of_int rb ));
   ANSITerminal.(print_string [black] "\n");
   ANSITerminal.(print_string [green] ("\nLongest Road length : " ^ string_of_int road_length ));
   ANSITerminal.(print_string [green] ("\nLongest Road? : " ^ string_of_bool most_road ));

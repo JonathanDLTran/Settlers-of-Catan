@@ -139,6 +139,9 @@ let opponent_reject () =
 let trade_zero_things () = 
   ANSITerminal.(print_string [green] "You cannot trade 0 resources for other resources or ask for 0 resources")
 
+let lack_resources_dev_msg () = 
+  ANSITerminal.(print_string [green] "You do not have enough resources to buy a dev card.")
+
 (* ########## GAME UTILITIES ####### *)
 
 let roll () = 
@@ -439,6 +442,27 @@ and handle_length player (p1, p2, board) =
   let length = longest_road player board in 
   ANSITerminal.(print_string [green] ("\nYour longest road has length: " ^ string_of_int length ^ ".\n"))
 
+and handle_buy player (p1, p2, board) = 
+  if player then begin
+    if not (has_resources_dev p1) then let () = lack_resources_dev_msg () in execute_player player (p1, p2, board)
+    else 
+      let (dev, board') = get_dev board in
+      let p1' = (dev |> Board.dev_to_string |> Player.string_to_dev |> add_dev) p1 in 
+      ANSITerminal.(print_string [green] ("You bought a " ^ (dev |> Board.dev_to_string) ^ " card."));
+      execute_player player (p1', p2, board')
+  end
+  else begin
+    if not (has_resources_dev p2) then let () = lack_resources_dev_msg () in execute_player player (p1, p2, board)
+    else
+      let (dev, board') = get_dev board in
+      let p2' = (dev |> Board.dev_to_string |> Player.string_to_dev |> add_dev) p2 in 
+      ANSITerminal.(print_string [green] ("You bought a " ^ (dev |> Board.dev_to_string) ^ " card."));
+      execute_player player (p1, p2', board')
+  end
+
+and handle_play_card card player (p1, p2, board) = 
+  failwith "Unimplemented"
+
 and execute_player player (p1, p2, board) = 
   let color = color_of_player player in 
   player_turn_msg player;
@@ -448,7 +472,8 @@ and execute_player player (p1, p2, board) =
   | Finish -> handle_victory player (p1, p2, board) (* finish turn and switch to next player *)
   | Invalid -> invalid_msg (); execute_player player (p1, p2, board)
   | Show -> handle_show player (p1, p2, board); execute_player player (p1, p2, board)
-  | Buy -> buy_dev_card_msg (); failwith "Unimplemented"
+  | Buy -> buy_dev_card_msg (); handle_buy player (p1, p2, board)
+  | Play card -> handle_play_card card player (p1, p2, board)
   | Map -> print_map board; execute_player player (p1, p2, board)
   | Cheat -> cheat_msg (); handle_cheat player (p1, p2, board)
   | BuildRoad (n1, n2) -> handle_road (n1, n2) color player (p1, p2, board)

@@ -116,6 +116,66 @@ type dev =
   | Monopoly
   | Victory
 
+let string_to_dev str = 
+  match str with 
+  | "knight" -> Knight 
+  | "road" -> Road 
+  | "year" -> Year 
+  | "monopoly" -> Monopoly
+  | "victory" -> Victory 
+  | _ -> failwith "cannot be any other dev type"
+
+let dev_to_string dev = 
+  match dev with 
+  | Knight -> "knight" 
+  | Road -> "road" 
+  | Year -> "year" 
+  | Monopoly -> "monopoly"
+  | Victory -> "victory" 
+
+let rec generate_n_list n value acc = 
+  if n = 0 then acc 
+  else generate_n_list (n - 1) value (value :: acc)
+
+let generate_knights = 
+  generate_n_list c_KNIGHT Knight [] 
+
+let generate_victory = 
+  generate_n_list c_VICTORY Victory [] 
+
+let generate_road_build = 
+  generate_n_list c_ROAD_BUILD Road [] 
+
+let generate_year_plenty = 
+  generate_n_list c_YEAR_PLENTY Year [] 
+
+let generate_monopoly = 
+  generate_n_list c_MONOPOLY Monopoly [] 
+
+(** [shuffle lst] is a random permutation of [lst]. *)
+let shuffle (lst : 'a list) : 'a list =
+  QCheck.Gen.(generate1 (shuffle_l lst))
+
+type dev_deck = dev list
+type t = dev_deck
+
+let init_dev_deck = 
+  generate_knights 
+  @ generate_victory 
+  @ generate_road_build 
+  @ generate_year_plenty 
+  @ generate_monopoly
+  |> shuffle
+
+let is_dev_empty dev = 
+  dev = []
+
+let hd_dev dev = 
+  List.hd dev
+
+let tl_dev dev = 
+  List.tl dev
+
 (** [prob_choose_dev n dev_deck] chooses the dev card uniformly
     from each of the dev card categories if n is randomly distributed. *)
 let prob_choose_dev n dev_deck = 

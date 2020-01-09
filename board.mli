@@ -62,3 +62,23 @@ val check_player_two_to_one : player -> string -> board -> bool
 (* ###### MANIPULATOR ####### *)
 
 val set_robber_tile : char -> board -> board 
+
+
+(* EXTRA DEV CARDS *)
+
+type dev = 
+  | Knight
+  | Road
+  | Year
+  | Monopoly
+  | Victory
+
+val string_to_dev : string -> dev
+val dev_to_string : dev -> string
+
+type dev_deck = dev list
+
+val init_dev_deck : dev_deck
+
+val is_dev_empty : board -> bool
+val get_dev : board -> (dev * board)
