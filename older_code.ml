@@ -390,7 +390,28 @@ build_settlement 54
 build_road 51 54
 build_settlement 25
 build_road 19 25
-
+cheat
+length
+build_road 21 22
+length
+build_road 22 28
+length
+build_road 28 34
+length
+build_road 33 34
+length
+build_road 27 33
+length
+build_road 15 21
+length
+build_road 9 15
+length
+build_road 16 22
+length
+build_road 10 16
+length
+build_road 9 10
+length
 
 *)
 

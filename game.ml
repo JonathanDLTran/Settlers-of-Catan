@@ -92,13 +92,52 @@ let stolen_card_msg resource =
   |> (fun res -> ANSITerminal.(print_string [green] ("You stole a " ^ res) ))
 
 let marine_trade_msg res1 res2 = 
-  ANSITerminal.(print_string [green] ("Attempting marine trade four " ^ res1 ^ " for one " ^ res2 ^ ".\n"))
+  ANSITerminal.(print_string [green] ("Attempting marine trade with four " ^ res1 ^ " for one " ^ res2 ^ ".\n"))
 
 let marine_trade_success res1 res2 = 
   ANSITerminal.(print_string [green] ("Successfully traded four " ^ res1 ^ " for one " ^ res2 ^ ".\n"))
 
 let marine_trade_fail () = 
   ANSITerminal.(print_string [green] "Marine trade failed. ")
+
+let three_to_one_trade_msg res1 res2 = 
+  ANSITerminal.(print_string [green] ("Attempting three to one trade with three " ^ res1 ^ " for one " ^ res2 ^ ".\n"))
+
+let three_to_one_success_msg res1 res2 = 
+  ANSITerminal.(print_string [green] ("Successfully traded three " ^ res1 ^ " for one " ^ res2 ^ ".\n"))
+
+let three_to_one_no_port_msg () = 
+  ANSITerminal.(print_string [green] "You have no three to one conversion port. \n")
+
+let insufficient_resouces_msg () = 
+  ANSITerminal.(print_string [green] "You lack enough of the appropriate resources to trade. \n")
+
+let two_to_one_trade_msg res1 res2 = 
+  ANSITerminal.(print_string [green] ("Attempting two to one trade with two " ^ res1 ^ " for one " ^ res2 ^ ".\n"))
+
+let two_to_one_success_msg res1 res2 = 
+  ANSITerminal.(print_string [green] ("Successfully traded two " ^ res1 ^ " for one " ^ res2 ^ ".\n"))
+
+let two_to_one_no_port_msg res1 = 
+  ANSITerminal.(print_string [green] ("You have no two to one conversion port for " ^ res1 ^ " . \n"))
+
+let player_trade_msg amt1 res1 amt2 res2 = 
+  ANSITerminal.(print_string [green] ("You are attempting a player trade with " ^ string_of_int amt1 ^ " " ^ res1 ^ " for " ^ string_of_int amt2 ^ " " ^ res2))
+
+let opponent_insufficient_resources () = 
+  ANSITerminal.(print_string [green] "Your opponent lacks enough of the appropriate resources to trade. \n")
+
+let player_trade_success amt1 res1 amt2 res2 = 
+  ANSITerminal.(print_string [green] ("You successfully finished a player trade with " ^ string_of_int amt1 ^ " " ^ res1 ^ " for " ^ string_of_int amt2 ^ " " ^ res2))
+
+let opponent_trade_msg amt1 res1 amt2 res2 = 
+  ANSITerminal.(print_string [green] ("\nPass the computer\n; Opponent: Please accept or reject this trade offer for " ^ string_of_int amt1 ^ " " ^ res1 ^ " for " ^ string_of_int amt2 ^ " " ^ res2 ^ "\n."))
+
+let opponent_reject () = 
+  ANSITerminal.(print_string [green] "Your opponent rejected the trade")
+
+let trade_zero_things () = 
+  ANSITerminal.(print_string [green] "You cannot trade 0 resources for other resources or ask for 0 resources")
 
 (* ########## GAME UTILITIES ####### *)
 
@@ -317,14 +356,80 @@ and handle_marine_trade (start, ending) color player (p1, p2, board) =
   end
 
 and handle_two_trade (start, ending) color player (p1, p2, board) =   
-  failwith "Unimplemented" 
+  two_to_one_trade_msg start ending;
+  if player then begin 
+    if not (can_remove_resource 2 start p1) then let () = insufficient_resouces_msg () in execute_player player (p1, p2, board)
+    else if not (check_tradeable_2 p1 (cmd_res_to_plyr_res start)) then let () = insufficient_resouces_msg () in execute_player player (p1, p2, board)
+    else if not (check_player_two_to_one player start board) then let () = two_to_one_no_port_msg start in execute_player player (p1, p2, board)
+    else let p1' = trade_resources_2 p1 (cmd_res_to_plyr_res start) (cmd_res_to_plyr_res ending) in 
+      two_to_one_success_msg start ending;
+      execute_player player (p1', p2, board)
+  end 
+  else begin
+    if not (can_remove_resource 2 start p2) then let () = insufficient_resouces_msg () in execute_player player (p1, p2, board)
+    else if not (check_tradeable_2 p2 (cmd_res_to_plyr_res start)) then let () = insufficient_resouces_msg () in execute_player player (p1, p2, board)
+    else if not (check_player_two_to_one player start board) then let () = two_to_one_no_port_msg start in execute_player player (p1, p2, board)
+    else let p2' = trade_resources_2 p2 (cmd_res_to_plyr_res start) (cmd_res_to_plyr_res ending ) in 
+      two_to_one_success_msg start ending;
+      execute_player player (p1, p2', board)
+  end
 
 and handle_three_trade (start, ending) color player (p1, p2, board) =   
-  failwith "Unimplemented" 
+  three_to_one_trade_msg start ending;
+  if player then begin 
+    if not (can_remove_resource 3 start p1) then let () = insufficient_resouces_msg () in execute_player player (p1, p2, board)
+    else if not (check_tradeable_3 p1 (cmd_res_to_plyr_res start)) then let () = insufficient_resouces_msg () in execute_player player (p1, p2, board)
+    else if not (check_player_three_to_one player board) then let () = three_to_one_no_port_msg () in execute_player player (p1, p2, board)
+    else let p1' = trade_resources_3 p1 (cmd_res_to_plyr_res start) (cmd_res_to_plyr_res ending ) in 
+      three_to_one_success_msg start ending;
+      execute_player player (p1', p2, board)
+  end 
+  else begin
+    if not (can_remove_resource 3 start p2) then let () = insufficient_resouces_msg () in execute_player player (p1, p2, board)
+    else if not (check_tradeable_3 p2 (cmd_res_to_plyr_res start)) then let () = insufficient_resouces_msg () in execute_player player (p1, p2, board)
+    else if not (check_player_three_to_one player board) then let () = three_to_one_no_port_msg () in execute_player player (p1, p2, board)
+    else let p2' = trade_resources_3 p2 (cmd_res_to_plyr_res start) (cmd_res_to_plyr_res ending ) in 
+      three_to_one_success_msg start ending;
+      execute_player player (p1, p2', board)
+  end
 
 and handle_player_trade 
     (start, start_amt, ending, ending_amt) color player (p1, p2, board) =  
-  failwith "Unimplemented" 
+  player_trade_msg start_amt start ending_amt ending;
+  if start_amt = 0 || ending_amt = 0 then let () = trade_zero_things () in execute_player player (p1, p2, board) 
+  else begin 
+    if player then begin 
+      if not (can_remove_resource start_amt start p1) then let () = insufficient_resouces_msg () in execute_player player (p1, p2, board)
+      else 
+        let () = opponent_trade_msg start_amt start ending_amt ending in 
+        match () |> read_line |> parse_affirmative with 
+        | NotAffirmative -> opponent_reject (); execute_player player (p1, p2, board)
+        | Reject -> opponent_reject (); execute_player player (p1, p2, board)
+        | Accept -> begin 
+            if not (can_remove_resource ending_amt start p2) then let () = opponent_insufficient_resources () in execute_player player (p1, p2, board)
+            else 
+              let p1' = player_trade_resources p1 start start_amt ending ending_amt in 
+              let p2' = player_trade_resources p2 ending ending_amt start start_amt in 
+              player_trade_success start_amt start ending_amt ending;
+              execute_player player (p1', p2', board)
+          end 
+    end 
+    else 
+    if not (can_remove_resource start_amt start p2) then let () = insufficient_resouces_msg () in execute_player player (p1, p2, board)
+    else 
+      let () = opponent_trade_msg start_amt start ending_amt ending in 
+      match () |> read_line |> parse_affirmative with 
+      | NotAffirmative -> opponent_reject (); execute_player player (p1, p2, board)
+      | Reject -> opponent_reject (); execute_player player (p1, p2, board)
+      | Accept -> begin 
+          if not (can_remove_resource ending_amt start p2) then let () = opponent_insufficient_resources () in execute_player player (p1, p2, board)
+          else 
+            let p2' = player_trade_resources p2 start start_amt ending ending_amt in 
+            let p1' = player_trade_resources p1 ending ending_amt start start_amt in 
+            player_trade_success start_amt start ending_amt ending;
+            execute_player player (p1', p2', board)
+        end 
+  end    
 
 and handle_cheat player (p1, p2, board) = 
   if player then execute_player player (cheat_augment_resources p1, p2, board)

@@ -62,6 +62,9 @@ val check_tradeable_3 : player -> resource -> bool
 val trade_resources_3 : player -> resource -> resource -> player
 val check_tradeable_2 : player -> resource -> bool
 val trade_resources_2 : player -> resource -> resource -> player
+val can_remove_resource : int -> string -> player -> bool
+val string_to_resource : string -> resource
+val player_trade_resources : player -> string -> int -> string -> int -> player
 
 val print_string_of_player_info : player -> unit
 

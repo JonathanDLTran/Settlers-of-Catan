@@ -263,6 +263,21 @@ let check_tradeable_2 player resource =
 let trade_resources_2 player res_start res_end = 
   trade_resources_n 2 1 player res_start res_end
 
+let string_to_resource str = 
+  match str with 
+  | "ore" -> Ore
+  | "wheat" -> Wheat 
+  | "lumber" -> Lumber
+  | "wool" -> Wool
+  | "brick" -> Brick
+  | _ -> failwith "Cannot remove a non ore, wheat, lumber, wool , brick resource"
+
+let player_trade_resources player res1 amt1 res2 amt2 = 
+  let resource1 = string_to_resource res1 in 
+  let resource2 = string_to_resource res2 in 
+  ((player 
+    |> remove_resource_n_times) resource1 amt1 
+   |> add_resource_n_times) resource2 amt2
 
 let knights_to_list player = [
   player.knights_held;
@@ -443,6 +458,15 @@ let get_robber player = player.robber
 let set_robber player status = {
   player with robber = status
 }
+
+let can_remove_resource n resource_string player = 
+  match resource_string with 
+  | "ore" -> player.ore >= n 
+  | "wheat" -> player.wheat >= n
+  | "lumber" -> player.lumber >= n
+  | "wool" -> player.wool >= n
+  | "brick" -> player.brick >= n 
+  | _ -> failwith "Cannot remove a non ore, wheat, lumber, wool , brick resource"
 
 let print_string_of_player_info (p : player) = 
   let robber_status = get_robber p in 

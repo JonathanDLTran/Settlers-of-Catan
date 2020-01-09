@@ -88,6 +88,19 @@ let tile_resource_value = [
 
 let c_NUM_NODES = 54
 
+let port_resource = [
+  (3, Lumber);
+  (8, Lumber);
+  (19, Brick);
+  (25, Brick);
+  (51, Wheat);
+  (52, Wheat);
+  (6, Wool);
+  (11, Wool);
+  (24, Ore);
+  (30, Ore);
+]
+
 (* ######## TILE CONVERSION ######### *)
 
 (** [tile_to_string tile] is the corresponding string of the tile.  *)
@@ -605,7 +618,7 @@ let my_max lst =
     |> (fun l -> List.nth l 0 + List.nth l 1)
 
 let all_nodes_visited neighbors nodes_visited = 
-  List.exists (fun node -> List.mem node nodes_visited) neighbors
+  List.for_all (fun node -> List.mem node nodes_visited) neighbors
 
 let rec get_unvisited_nodes neighbors nodes_visited acc = 
   match neighbors with 
@@ -638,30 +651,49 @@ let top_two_max x y z =
     memoized information in the [hash_table] to determine
     longest path
     Imperative with Hashtable. *)
-let rec fixed_node_longest node edges nodes_visited hash_table = 
-  let neighbors = get_neighbors node edges [] in 
-  let nodes_visited' = node :: nodes_visited in 
-  if List.length neighbors = 1 && all_nodes_visited neighbors nodes_visited' then (0, nodes_visited') (* ending tail case *)
-  else if all_nodes_visited neighbors nodes_visited' then (1, nodes_visited') (* circular case *)
+let rec fixed_node_longest prev_node current_length node edges nodes_visited hash_table = 
+  let neighbors = get_neighbors node edges [] in
+  let nodes_visited' = prev_node :: node :: nodes_visited in 
+  if List.length neighbors = 1 && (List.hd neighbors = prev_node) then (current_length, nodes_visited') (* ending tail case *) (* *)
+  (* if List.length neighbors = 1 && all_nodes_visited neighbors nodes_visited' then (current_length, nodes_visited')  *)
+  (* else if List.length neighbors = 1 && all_nodes_visited neighbors nodes_visited' then (current_length + 1, nodes_visited') *)
+  (* else if all_nodes_visited neighbors nodes_visited' && prev_node = 0 then (current_length, nodes_visited') *)
+  else if all_nodes_visited neighbors nodes_visited' then (current_length + 1, nodes_visited') (* circular case *)
   else begin 
     let unvisited = get_unvisited_nodes neighbors nodes_visited' [] in 
     match unvisited with 
     | [] -> failwith "Must have at least one neighbor"
     | h :: [] -> 
-      let length1, nodes_visited1 = fixed_node_longest h edges nodes_visited' hash_table in 
-      (1 + length1, nodes_visited1)
+      let length1, nodes_visited1 = fixed_node_longest node 1 h edges nodes_visited' hash_table in 
+      (current_length + length1, nodes_visited1)
     | h1 :: h2 :: [] -> 
-      let length1, nodes_visited1 = fixed_node_longest h1 edges nodes_visited' hash_table in 
-      let length2, nodes_visited2 = fixed_node_longest h2 edges nodes_visited1 hash_table in 
-      (1 + length1 + 1 + length2, nodes_visited2)
+      let length1, nodes_visited1 = fixed_node_longest node 1 h1 edges nodes_visited' hash_table in 
+      if not (List.mem h2 nodes_visited1) then begin
+        let length2, nodes_visited2 = fixed_node_longest node 1 h2 edges nodes_visited' hash_table in 
+        if prev_node = 0 then (length1 + length2, nodes_visited1 @ nodes_visited2)
+        else (current_length + max length1 length2, nodes_visited1 @ nodes_visited2)
+      end 
+      else (current_length + length1, nodes_visited1)
     | h1 :: h2 :: h3 :: [] ->
-      let length1, nodes_visited1 = fixed_node_longest h1 edges nodes_visited' hash_table in 
-      let length2, nodes_visited2 = fixed_node_longest h2 edges nodes_visited1 hash_table in
-      let length3, nodes_visited3 = fixed_node_longest h3 edges nodes_visited2 hash_table in  
-      length1 |> string_of_int |> print_endline;
-      length2 |> string_of_int |> print_endline;
-      length3 |> string_of_int |> print_endline;
-      (1 + 1 + top_two_max length1 length2 length3, nodes_visited3)
+      let length1, nodes_visited1 = fixed_node_longest node 1 h1 edges nodes_visited' hash_table in 
+      if not (List.mem h2 nodes_visited1) then begin 
+        let length2, nodes_visited2 = fixed_node_longest node 1 h2 edges nodes_visited' hash_table in
+        if not (List.mem h3 nodes_visited2) then begin 
+          let length3, nodes_visited3 = fixed_node_longest node 1 h3 edges nodes_visited' hash_table in  
+          (top_two_max (length1) (length2) (length3), nodes_visited1 @ nodes_visited2 @ nodes_visited3)
+        end 
+        else (length2 + length1, nodes_visited1 @ nodes_visited2)
+      end 
+      else begin
+        if not (List.mem h3 nodes_visited1) then begin 
+          let length3, nodes_visited3 = fixed_node_longest node 1 h3 edges nodes_visited1 hash_table in  
+          (length1 + length3, nodes_visited3)
+        end 
+        else begin
+          if prev_node = 0 then (current_length + length1 + 1, nodes_visited1)
+          else (current_length + length1, nodes_visited1)
+        end
+      end 
     | h :: t -> failwith "Cannot have more than three neighbors"
   end
 (* | [] -> 
@@ -688,6 +720,11 @@ let rec fixed_node_longest node edges nodes_visited hash_table =
 let get_max start lst = 
   List.fold_left (fun init n -> if n > init then n else init) start lst
 
+let print_pairs lst = 
+  lst
+  |> List.map (fun (x, y) -> print_endline ("(" ^ string_of_int x ^ " , " ^ string_of_int y ^ ")")) 
+  |> ignore
+
 (** [longest_road board] is the length of the longest road
     on [board] for [player].  Imperative with Hashtable. *)
 let longest_road player board = 
@@ -695,7 +732,7 @@ let longest_road player board =
   let unique_nodes = player_unique_nodes player_edges in 
   let hash_table = Hashtbl.create (List.length unique_nodes) in 
   unique_nodes
-  |> List.map (fun n -> fixed_node_longest n player_edges [] hash_table) 
+  |> List.map (fun n -> fixed_node_longest 0 0 n player_edges [] hash_table) 
   |> List.map (fun (length, _) -> length)
   |> (fun l -> get_max (List.hd l) l)
 
@@ -720,10 +757,25 @@ let check_player_two_to_one player resource_string board =
     |> List.filter (fun (n, p, s) -> p = player)
     |> List.map (fun (n, _, _) -> n) in 
   let resource_ports = 
+    port_resource
+    |> List.filter (fun (_, res) -> res = resource) 
+    |> List.map (fun (n, _) -> n) in
+  List.exists (fun n -> List.mem n player_nodes) resource_ports
+
+(** [check_player_two_to_one player resource board] is [true] iff
+    [player] can access a 2 : 1 port for [resource] on the [board]. *)
+(* let check_player_two_to_one player resource_string board = 
+   let resource = string_to_resource resource_string in 
+   let nodes = board.nodes_occupied in 
+   let player_nodes = 
+    nodes 
+    |> List.filter (fun (n, p, s) -> p = player)
+    |> List.map (fun (n, _, _) -> n) in 
+   let resource_ports = 
     two_to_one_port_nodes
     |> List.filter (fun (n, r) -> r = resource)
     |> List.map (fun (n, _) -> n) in 
-  List.exists (fun n -> List.mem n player_nodes) resource_ports
+   List.exists (fun n -> List.mem n player_nodes) resource_ports *)
 
 (* ######### BOARD STRING REPRESENTATION ############ *)
 
