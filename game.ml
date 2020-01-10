@@ -295,14 +295,30 @@ let check_build_city player (p1, p2, board) =
     else true
   end
 
+let largest_army player (p1, p2, board) = 
+  let num_knights1 = num_knights p1 in 
+  let num_knights2 = num_knights p2 in 
+  let vp1 = get_victory_points p1 in 
+  let vp2 = get_victory_points p2 in 
+
+  if num_knights1 > 2 && num_knights2 > 2 && num_knights1 > num_knights2 
+  then (set_victory_points p1 (vp1 + 2), p2, board)
+  else if num_knights1 > 2 && num_knights2 > 2 && num_knights1 < num_knights2 
+  then (p1, set_victory_points p2 (vp2 + 2), board)
+  else (p1, p2, board)
+
 let handle_victory player (p1, p2, board) = 
   if player then begin
     if check_victory p1 then GameVictory player
-    else return_game (p1, p2, board)
+    else 
+      let p1' = reset_dev_current p1 in 
+      return_game (p1', p2, board)
   end 
   else begin 
     if check_victory p2 then GameVictory player
-    else return_game (p1, p2, board)
+    else 
+      let p2' = reset_dev_current p2 in 
+      return_game (p1, p2', board)
   end 
 
 let rec handle_road (n1, n2) color player (p1, p2, board) = 
@@ -460,8 +476,198 @@ and handle_buy player (p1, p2, board) =
       execute_player player (p1, p2', board')
   end
 
+and handle_monopoly_resource player p1 p2 = 
+  if player then begin 
+    ANSITerminal.(print_string [green] "Please enter a resource: ");
+    match () |> read_line |> parse_resource with 
+    | Lumber -> 
+      let n_res = get_num_resource p2 (Player.Lumber) in 
+      (add_resource_n n_res p1 Player.Lumber, remove_resource_n n_res p2 Player.Lumber)
+    | Ore -> 
+      let n_res = get_num_resource p2 (Player.Ore) in 
+      (add_resource_n n_res p1 Player.Ore, remove_resource_n n_res p2 Player.Ore)
+    | Wool -> 
+      let n_res = get_num_resource p2 (Player.Wool) in 
+      (add_resource_n n_res p1 Player.Wool, remove_resource_n n_res p2 Player.Wool)
+    | Wheat -> 
+      let n_res = get_num_resource p2 (Player.Wheat) in 
+      (add_resource_n n_res p1 Player.Wheat, remove_resource_n n_res p2 Player.Wheat)
+    | Brick -> 
+      let n_res = get_num_resource p2 (Player.Brick) in 
+      (add_resource_n n_res p1 Player.Brick, remove_resource_n n_res p2 Player.Brick)
+    | NotResource -> handle_monopoly_resource player p1 p2
+  end 
+  else begin 
+    ANSITerminal.(print_string [green] "Please enter a resource: ");
+    match () |> read_line |> parse_resource with 
+    | Lumber -> 
+      let n_res = get_num_resource p1 (Player.Lumber) in 
+      (remove_resource_n n_res p1 Player.Lumber, add_resource_n n_res p2 Player.Lumber)
+    | Ore -> 
+      let n_res = get_num_resource p1 (Player.Ore) in 
+      (remove_resource_n n_res p1 Player.Ore, add_resource_n n_res p2 Player.Ore)
+    | Wool -> 
+      let n_res = get_num_resource p1 (Player.Wool) in 
+      (remove_resource_n n_res p1 Player.Wool, add_resource_n n_res p2 Player.Wool)
+    | Wheat -> 
+      let n_res = get_num_resource p1 (Player.Wheat) in 
+      (remove_resource_n n_res p1 Player.Wheat, add_resource_n n_res p2 Player.Wheat)
+    | Brick -> 
+      let n_res = get_num_resource p1 (Player.Brick) in 
+      (remove_resource_n n_res p1 Player.Brick, add_resource_n n_res p2 Player.Brick)
+    | NotResource -> handle_monopoly_resource player p1 p2
+  end
+
+and handle_play_monopoly player (p1, p2, board) = 
+  if player then begin 
+    if not (has_dev (Player.string_to_dev "monopoly") p1) 
+    then let () = ANSITerminal.(print_string [green] "\nYou do not have a monopoly card you can currently play. \n") in execute_player player (p1, p2, board)
+    else 
+      let () = ANSITerminal.(print_string [green] "\nPlaying a monopoly. \n") in 
+      let p1', p2' = handle_monopoly_resource player p1 p2  in 
+      execute_player player ((p1', p2', board) |> handle_one_dev_card player)
+  end
+  else begin 
+    if not (has_dev (Player.string_to_dev "monopoly") p2) 
+    then let () = ANSITerminal.(print_string [green] "\nYou do not have a monopoly card you can currently play. \n") in execute_player player (p1, p2, board)
+    else 
+      let () = ANSITerminal.(print_string [green] "\nPlaying a monopoly. \n") in 
+      let p1', p2' = handle_monopoly_resource player p1 p2  in 
+      execute_player player ((p1', p2', board) |> handle_one_dev_card player)
+  end
+
+and handle_play_victory player (p1, p2, board) = 
+  if player then begin 
+    if not (has_dev (Player.string_to_dev "victory") p1) 
+    then let () = ANSITerminal.(print_string [green] "\nYou do not have a victory card you can currently play. \n") in execute_player player (p1, p2, board)
+    else if get_victory_points p1 <> 9 
+    then let () = ANSITerminal.(print_string [green] "\nYou can only play a victory card when you have nine victory points. \n") in execute_player player (p1, p2, board)
+    else 
+      let () = ANSITerminal.(print_string [green] "\nPlaying a victory card. \n") in 
+      let p1' = play_dev (Player.string_to_dev "victory") p1 in 
+      execute_player player ((p1', p2, board) |> handle_one_dev_card player)
+  end
+  else begin 
+    if not (has_dev (Player.string_to_dev "victory") p2) 
+    then let () = ANSITerminal.(print_string [green] "\nYou do not have a victory card you can currently play. \n") in execute_player player (p1, p2, board)
+    else if get_victory_points p2 <> 9 
+    then let () = ANSITerminal.(print_string [green] "\nYou can only play a victory card when you have nine victory points. \n") in execute_player player (p1, p2, board)
+    else 
+      let () = ANSITerminal.(print_string [green] "\nPlaying a victory card. \n") in 
+      let p2' = play_dev (Player.string_to_dev "victory") p2 in 
+      execute_player player ((p1, p2', board) |> handle_one_dev_card player)
+  end
+
+and handle_build_road_helper (n1, n2) player p1 p2 board = 
+  if check_build_road player (p1, p2, board) then begin 
+    match add_road n1 n2 player board with
+    | Success board' -> 
+      let p1', p2' = play_road player (p1, p2) in 
+      (p1', p2' , board')
+    | Failure (error, board') -> 
+      deal_with_action_error ANSITerminal.red error;
+      handle_build_road player p1 p2 board'
+
+  end 
+  else handle_build_road player p1 p2 board
+
+and handle_build_road player p1 p2 board = 
+  ANSITerminal.(print_string [green] "Please enter a road: ");
+  match () |> read_line |> parse with 
+  | BuildRoad (n1, n2) -> handle_build_road_helper (n1, n2) player p1 p2 board  
+  | _  -> handle_build_road player p1 p2 board
+
+and handle_play_road player (p1, p2, board) = 
+  if player then begin 
+    if not (has_dev (Player.string_to_dev "road") p1) 
+    then let () = ANSITerminal.(print_string [green] "\nYou do not have a build road card you can currently play. \n") in execute_player player (p1, p2, board)
+    else 
+      let () = ANSITerminal.(print_string [green] "\nPlaying a build road. \n") in 
+      let p1', p2', board' = handle_build_road player p1 p2 board in 
+      let p1', p2', board' = handle_build_road player p1' p2' board' in 
+      execute_player player ((p1', p2', board') |> handle_one_dev_card player)
+  end
+  else begin 
+    if not (has_dev (Player.string_to_dev "road") p2) 
+    then let () = ANSITerminal.(print_string [green] "\nYou do not have a build roadcard you can currently play. \n") in execute_player player (p1, p2, board)
+    else 
+      let () = ANSITerminal.(print_string [green] "\nPlaying a build road. \n") in 
+      let p1', p2', board' = handle_build_road player p1 p2 board in 
+      let p1', p2', board' = handle_build_road player p1' p2' board' in 
+      execute_player player ((p1', p2', board') |> handle_one_dev_card player)
+  end
+
+and handle_get_resource p = 
+  ANSITerminal.(print_string [green] "Please enter a resource: ");
+  match () |> read_line |> parse_resource with 
+  | Lumber -> add_resource_n 1 p (Player.Lumber)
+  | Ore -> add_resource_n 1 p (Player.Ore)
+  | Wool -> add_resource_n 1 p (Player.Wool)
+  | Wheat -> add_resource_n 1 p (Player.Wheat)
+  | Brick -> add_resource_n 1 p (Player.Brick)
+  | NotResource -> handle_get_resource p
+
+and handle_play_year player (p1, p2, board) = 
+  if player then begin 
+    if not (has_dev (Player.string_to_dev "year") p1) 
+    then let () = ANSITerminal.(print_string [green] "\nYou do not have a year of plenty card you can currently play. \n") in execute_player player (p1, p2, board)
+    else 
+      let () = ANSITerminal.(print_string [green] "\nPlaying a year of plenty. \n") in 
+      let p1' = p1 |> handle_get_resource |> handle_get_resource in 
+      execute_player player ((p1', p2, board) |> handle_one_dev_card player)
+  end
+  else begin 
+    if not (has_dev (Player.string_to_dev "year") p2) 
+    then let () = ANSITerminal.(print_string [green] "\nYou do not have a year of plenty card you can currently play. \n") in execute_player player (p1, p2, board)
+    else 
+      let () = ANSITerminal.(print_string [green] "\nPlaying a year of plenty. \n") in 
+      let p2' = p2 |> handle_get_resource |> handle_get_resource in 
+      execute_player player ((p1, p2', board) |> handle_one_dev_card player)
+  end
+
+and handle_play_knight player (p1, p2, board) = 
+  if player then begin 
+    if not (has_dev (Player.string_to_dev "knight") p1) 
+    then let () = ANSITerminal.(print_string [green] "\nYou do not have a knight you can currently play. \n") in execute_player player (p1, p2, board)
+    else 
+      let () = ANSITerminal.(print_string [green] "\nPlaying a knight. \n") in 
+      let p1' = play_dev (Player.string_to_dev "knight") p1 in 
+      execute_player player ((p1', p2, board) |> handle_one_dev_card player)
+  end
+  else begin 
+    if not (has_dev (Player.string_to_dev "knight") p2) 
+    then let () = ANSITerminal.(print_string [green] "\nYou do not have a knight you can currently play. \n") in execute_player player (p1, p2, board)
+    else 
+      let () = ANSITerminal.(print_string [green] "\nPlaying a knight. \n") in 
+      let p2' = play_dev (Player.string_to_dev "knight") p2 in 
+      execute_player player ((p1, p2', board) |> handle_one_dev_card player)
+  end
+
+and handle_play_once card player (p1, p2, board) = 
+  if player then begin 
+    if has_dev_played p1 then true
+    else false
+  end
+  else begin 
+    if has_dev_played p2 then true
+    else false
+  end
+
 and handle_play_card card player (p1, p2, board) = 
-  failwith "Unimplemented"
+  if (handle_play_once card player (p1, p2, board))
+  then execute_player player (p1, p2, board)
+  else
+    match card with 
+    | "monopoly" -> handle_play_monopoly player (p1, p2, board)
+    | "victory" -> handle_play_victory player (p1, p2, board)
+    | "road" -> handle_play_road player (p1, p2, board) 
+    | "year" -> handle_play_year player (p1, p2, board)
+    | "knight" -> handle_play_knight player (p1, p2, board)
+    | _ -> failwith "In Game, cannot be non card"
+
+and handle_one_dev_card player (p1, p2, board) = 
+  if player then (add_dev_card_played_already p1, p2, board)
+  else (p1, add_dev_card_played_already p2, board)
 
 and execute_player player (p1, p2, board) = 
   let color = color_of_player player in 
@@ -469,7 +675,7 @@ and execute_player player (p1, p2, board) =
   match () |> read_line |> parse with 
   | Quit -> quit_msg (); GameQuit
   | Length -> handle_length player (p1, p2, board); execute_player player (p1, p2, board)
-  | Finish -> handle_victory player (p1, p2, board) (* finish turn and switch to next player *)
+  | Finish -> handle_victory player ((p1, p2, board) |> largest_army player) (* finish turn and switch to next player *)
   | Invalid -> invalid_msg (); execute_player player (p1, p2, board)
   | Show -> handle_show player (p1, p2, board); execute_player player (p1, p2, board)
   | Buy -> buy_dev_card_msg (); handle_buy player (p1, p2, board)

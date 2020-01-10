@@ -36,3 +36,13 @@ type robber =
   | NewLocation of string
 
 val parse_robber : string -> robber
+
+type resource = 
+  | NotResource
+  | Ore 
+  | Wheat 
+  | Wool 
+  | Brick
+  | Lumber
+
+val parse_resource : string -> resource

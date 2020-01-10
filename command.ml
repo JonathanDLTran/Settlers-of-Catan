@@ -169,3 +169,31 @@ let string_to_tile s =
 
 let parse_robber s = 
   s |> clean |> string_to_tile
+
+type resource = 
+  | NotResource
+  | Ore 
+  | Wheat 
+  | Wool 
+  | Brick
+  | Lumber
+
+let c_LUMBER = "lumber" 
+let c_ORE = "ore"
+let c_WOOL = "wool"
+let c_BRICK = "brick"
+let c_WHEAT = "wheat"
+
+let string_to_resource s = 
+  match s with 
+  | str :: [] ->
+    if str = c_LUMBER then Lumber 
+    else if str = c_ORE then Ore
+    else if str = c_WOOL then Wool
+    else if str = c_BRICK then Brick
+    else if str = c_WHEAT then Wheat
+    else NotResource
+  | _ -> NotResource
+
+let parse_resource s = 
+  s |> clean |> string_to_resource

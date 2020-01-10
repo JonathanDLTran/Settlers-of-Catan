@@ -24,7 +24,7 @@ type player = {
   year_of_plenty_current : int;
   monopoly_current : int;
   road_building_current : int;
-  victory_cards_current : int;
+  (* victory_cards_current : int; *)
 
   dev_played_already : bool;
 
@@ -64,7 +64,7 @@ let initialize_player = {
   year_of_plenty_current = 0;
   monopoly_current = 0;
   road_building_current = 0;
-  victory_cards_current = 0;
+  (* victory_cards_current = 0; *)
 
   dev_played_already = false;
 
@@ -109,6 +109,30 @@ let resources_to_tuple player = (
 )
 
 type resource = | Ore | Wheat | Wool | Brick | Lumber
+
+let add_resource_n n player resource = 
+  match resource with
+  | Ore -> {player with ore = player.ore + n}
+  | Wheat -> {player with wheat = player.wheat + n}
+  | Wool -> {player with wool = player.wool + n}
+  | Brick -> {player with brick = player.brick + n}
+  | Lumber -> {player with lumber = player.lumber + n}
+
+let remove_resource_n n player resource =   
+  match resource with
+  | Ore -> {player with ore = player.ore - n}
+  | Wheat -> {player with wheat = player.wheat - n}
+  | Wool -> {player with wool = player.wool - n}
+  | Brick -> {player with brick = player.brick - n}
+  | Lumber -> {player with lumber = player.lumber - n}
+
+let get_num_resource player resource = 
+  match resource with
+  | Ore -> player.ore
+  | Wheat -> player.wheat
+  | Wool -> player.wool
+  | Brick -> player.brick
+  | Lumber -> player.lumber 
 
 let add_resource_to_hand player resource = 
   match resource with
@@ -298,18 +322,22 @@ let reset_dev_played player = {
   player with dev_played_already = false;
 }
 
+let has_dev_played player = 
+  player.dev_played_already
+
 let reset_dev_current player = {
   player with 
   dev_played_already = false;
+  knights_held = player.knights_held_current + player.knights_held;
   year_of_plenty = player.year_of_plenty_current + player.year_of_plenty;
   monopoly = player.monopoly_current + player.monopoly;
   road_building = player.road_building_current + player.road_building;
-  victory_cards = player.victory_cards_current + player.victory_cards;
 
+  knights_held_current = 0;
   year_of_plenty_current = 0;
   monopoly_current = 0;
   road_building_current = 0;
-  victory_cards_current = 0;
+  (* victory_cards_current = 0; *)
 }
 
 let knights_to_tuple player = (
@@ -327,6 +355,9 @@ let play_knight player = {
   knights_played = player.knights_played + 1;
 }
 
+let num_knights player = 
+  player.knights_held
+
 let dev_to_tuple player = (
   player.year_of_plenty,
   player.monopoly,
@@ -336,7 +367,7 @@ let dev_to_tuple player = (
 let dev_to_tuple_current player = (
   player.year_of_plenty_current,
   player.monopoly_current,
-  player.victory_cards_current,
+  (* player.victory_cards_current, *)
   player.road_building_current)
 
 type dev = 
@@ -366,7 +397,7 @@ let add_dev dev player =
    | Knight -> {player with knights_held_current = player.knights_held_current + 1}
    | Year -> {player with year_of_plenty_current = player.year_of_plenty_current + 1}
    | Monopoly -> {player with monopoly_current = player.monopoly_current + 1}
-   | Victory -> {player with victory_cards_current = player.victory_cards_current + 1}
+   | Victory -> {player with victory_cards = player.victory_cards + 1}
    | Road -> {player with road_building_current = player.road_building_current + 1})
   |> dev_cost
 
@@ -383,6 +414,14 @@ let play_dev dev player =
      victory_cards = player.victory_cards - 1;
      victory_points = player.victory_points + 1;}
   | Road -> {player with road_building = player.road_building - 1}
+
+let has_dev dev player = 
+  match dev with
+  | Knight -> player.knights_held >= 1
+  | Year -> player.year_of_plenty >= 1
+  | Monopoly -> player.monopoly >= 1
+  | Victory -> player.victory_cards >= 1
+  | Road -> player.road_building >= 1
 
 let has_resources_dev player = 
   player.ore >= 1 &&
@@ -536,7 +575,7 @@ let print_string_of_player_info (p : player) =
   let knights_played = p.knights_played in 
   let most_knights = is_largest_army p in 
   let (y, m, vc, rb) = dev_to_tuple p in 
-  let (yc, mc, vcc, rbc) = dev_to_tuple_current p in 
+  let (yc, mc, rbc) = dev_to_tuple_current p in 
   let road_length = get_length_road p in 
   let most_road = is_longest_road p in 
   let (w, b, o, wl, l) = resources_to_tuple p in 
@@ -558,13 +597,12 @@ let print_string_of_player_info (p : player) =
   ANSITerminal.(print_string [black] "\n");
   ANSITerminal.(print_string [yellow] ("\nNumber of Year of Plenty Cards that cannot be played : " ^ string_of_int yc ));
   ANSITerminal.(print_string [yellow] ("\nNumber of Monopoly Cards that cannot be played : " ^ string_of_int mc ));
-  ANSITerminal.(print_string [yellow] ("\nNumber of Road Building Cards that cannot be played : " ^ string_of_int vcc ));
-  ANSITerminal.(print_string [yellow] ("\nNumber of Victory Point Cards that cannot be played: " ^ string_of_int rbc ));
+  ANSITerminal.(print_string [yellow] ("\nNumber of Road Building Cards that cannot be played : " ^ string_of_int rbc ));
   ANSITerminal.(print_string [black] "\n");
   ANSITerminal.(print_string [yellow] ("\nNumber of Year of Plenty Cards that can be played : " ^ string_of_int y ));
   ANSITerminal.(print_string [yellow] ("\nNumber of Monopoly Cards that can be played : " ^ string_of_int m ));
-  ANSITerminal.(print_string [yellow] ("\nNumber of Road Building Cards that can be played : " ^ string_of_int vc ));
-  ANSITerminal.(print_string [yellow] ("\nNumber of Victory Point Cards that can be played: " ^ string_of_int rb ));
+  ANSITerminal.(print_string [yellow] ("\nNumber of Road Building Cards that can be played : " ^ string_of_int rb ));
+  ANSITerminal.(print_string [yellow] ("\nNumber of Victory Point Cards that can be played: " ^ string_of_int vc ));
   ANSITerminal.(print_string [black] "\n");
   ANSITerminal.(print_string [green] ("\nLongest Road length : " ^ string_of_int road_length ));
   ANSITerminal.(print_string [green] ("\nLongest Road? : " ^ string_of_bool most_road ));
